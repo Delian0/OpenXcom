@@ -327,8 +327,6 @@ void ConfirmDestinationState::btnOkClick(Action *)
 	{
 		if (!craft->arePilotsOnboard())
 		{
-			_game->popState();
-			_game->popState();
 			_game->pushState(new CraftNotEnoughPilotsState(craft));
 			return;
 		}
