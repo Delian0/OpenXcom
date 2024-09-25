@@ -92,6 +92,8 @@ CraftNotEnoughPilotsState::~CraftNotEnoughPilotsState()
 void CraftNotEnoughPilotsState::btnOkClick(Action *)
 {
 	_game->popState();
+	_game->popState();
+	_game->popState();
 }
 
 /**
