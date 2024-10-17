@@ -409,6 +409,7 @@
     <ClCompile Include="Battlescape\CommendationState.cpp" />
     <ClCompile Include="Battlescape\ConfirmEndMissionState.cpp" />
     <ClCompile Include="Battlescape\DebriefingState.cpp" />
+    <ClCompile Include="Battlescape\ExperienceOverviewState.cpp" />
     <ClCompile Include="Battlescape\Explosion.cpp" />
     <ClCompile Include="Battlescape\ExplosionBState.cpp" />
     <ClCompile Include="Battlescape\ExtendedBattlescapeLinksState.cpp" />
@@ -615,6 +616,7 @@
     <ClCompile Include="Mod\ExtraSprites.cpp" />
     <ClCompile Include="Mod\ExtraStrings.cpp" />
     <ClCompile Include="Mod\RuleMissionScript.cpp" />
+    <ClCompile Include="Mod\RuleWeaponSet.cpp" />
     <ClCompile Include="Mod\Texture.cpp" />
     <ClCompile Include="Mod\MapScript.cpp" />
     <ClCompile Include="Mod\MCDPatch.cpp" />
@@ -793,6 +795,7 @@
     <ClInclude Include="Battlescape\CommendationState.h" />
     <ClInclude Include="Battlescape\ConfirmEndMissionState.h" />
     <ClInclude Include="Battlescape\DebriefingState.h" />
+    <ClInclude Include="Battlescape\ExperienceOverviewState.h" />
     <ClInclude Include="Battlescape\Explosion.h" />
     <ClInclude Include="Battlescape\ExplosionBState.h" />
     <ClInclude Include="Battlescape\ExtendedBattlescapeLinksState.h" />
@@ -1013,6 +1016,7 @@
     <ClInclude Include="Mod\RuleStatBonus.h" />
     <ClInclude Include="Mod\RuleCommendations.h" />
     <ClInclude Include="Mod\RuleConverter.h" />
+    <ClInclude Include="Mod\RuleWeaponSet.h" />
     <ClInclude Include="resource.h" />
     <ClInclude Include="Mod\ArticleDefinition.h" />
     <ClInclude Include="Mod\City.h" />
