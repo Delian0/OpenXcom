@@ -202,7 +202,7 @@ void Language::loadFile(const FileMap::FileRecord *frec)
 		// Regular strings
 		if (langReader.hasVal())
 		{
-			std::string value = langReader.readVal<std::string>("");
+			std::string value = langReader.readVal<std::string>();
 			if (!value.empty())
 			{
 				std::string key = langReader.readKey<std::string>();
