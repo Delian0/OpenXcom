@@ -299,32 +299,32 @@ RuleStatBonus::RuleStatBonus()
  * Loads the item from a YAML file.
  * @param node YAML node.
  */
-void RuleStatBonus::load(const std::string& parentName, const YAML::Node& node, const ModScript::BonusStatsCommon& parser)
+void RuleStatBonus::load(const std::string& parentName, const YAML::YamlNodeReader& reader, const ModScript::BonusStatsCommon& parser)
 {
-	if (node)
+	if (reader)
 	{
-		if (const YAML::Node& stats = node[parser.getPropertyNodeName()])
+		if (const auto& stats = reader[ryml::to_csubstr(parser.getPropertyNodeName())])
 		{
 			_bonusOrig.clear();
-			if (stats.IsMap())
+			if (stats.isMap())
 			{
 				for (const auto& stat : statDataMap)
 				{
-					if (const YAML::Node &dd = stats[stat.name])
+					if (const auto& dd = stats[ryml::to_csubstr(stat.name)])
 					{
 						std::vector<float> vec;
-						if (dd.IsScalar())
+						if (dd.hasVal())
 						{
-							float val = dd.as<float>();
+							float val = dd.readVal<float>();
 							vec.push_back(val);
 						}
 						else
 						{
 							for (size_t j = 0; j < statDataFuncSize; ++j)
 							{
-								if (j < dd.size())
+								if (j < dd.childrenCount())
 								{
-									float val = dd[j].as<float>();
+									float val = dd[j].readVal<float>();
 									vec.push_back(val);
 								}
 							}
@@ -334,9 +334,9 @@ void RuleStatBonus::load(const std::string& parentName, const YAML::Node& node, 
 				}
 				_refresh = true;
 			}
-			else if (stats.IsScalar())
+			else if (stats.hasVal())
 			{
-				_container.load(parentName, stats.as<std::string>(), parser);
+				_container.load(parentName, stats.readVal<std::string>(), parser);
 				_refresh = false;
 			}
 			// let's remember that this was modified by a modder (i.e. is not a default value)

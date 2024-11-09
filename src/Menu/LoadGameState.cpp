@@ -209,7 +209,7 @@ void LoadGameState::think()
 		{
 			error(e.what(), s);
 		}
-		catch (YAML::Exception &e)
+		catch (std::runtime_error &e)
 		{
 			error(e.what(), s);
 		}

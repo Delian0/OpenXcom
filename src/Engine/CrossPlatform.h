@@ -241,8 +241,12 @@ namespace CrossPlatform
 	bool writeFile(const std::string& filename, const std::vector<unsigned char>& data);
 	/// Reads in a file
 	std::unique_ptr<std::istream> readFile(const std::string& filename);
+	/// Reads in a file
+	char* readFileRaw(const std::string& filename, size_t* pSize);
 	/// Reads file until "\n---" sequence is met or to the end. To be used only for savegames.
 	std::unique_ptr<std::istream> getYamlSaveHeader (const std::string& filename);
+	/// Reads file until "\n---" sequence is met or to the end. To be used only for savegames.
+	char* getYamlSaveHeaderRaw(const std::string& filename, size_t* pSize);
 	/// Flashes the game window.
 	void flashWindow();
 	/// Gets the DOS-style executable path.
