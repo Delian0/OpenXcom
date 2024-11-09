@@ -24,6 +24,7 @@
 #include "../../libs/rapidyaml/ryml_std.hpp"
 #pragma warning(pop)
 #include <unordered_map>
+#include <c4/format.hpp>
 
 //hash function for ryml::csubstr for unordered_map -> just calls the same thing std::hash<std::string> does
 template <> struct std::hash<ryml::csubstr>{ std::size_t operator()(const ryml::csubstr& k) const {	return _Hash_array_representation(k.str, k.len); } };
@@ -270,7 +271,11 @@ OutputType YamlNodeReader::readKey() const
 {
 	OutputType output;
 	if (!tryReadKey(output))
+	{
+		if (_root)
+			throw std::runtime_error(c4::formatrs<std::string>("{} ERROR: {}", _root->_fileName, "Tried to deserialize invalid node's key!"));
 		throw std::runtime_error("Tried to deserialize invalid node's key!");
+	}
 	return output;
 }
 
@@ -288,7 +293,11 @@ OutputType YamlNodeReader::readVal() const
 {
 	OutputType output;
 	if (!tryReadVal(output))
+	{
+		if (_root)
+			throw std::runtime_error(c4::formatrs<std::string>("{} ERROR: {}", _root->_fileName, "Tried to deserialize invalid node!"));
 		throw std::runtime_error("Tried to deserialize invalid node!");
+	}
 	return output;
 }
 
@@ -304,23 +313,27 @@ OutputType YamlNodeReader::readVal(const OutputType& defaultValue) const
 template <typename OutputType>
 bool YamlNodeReader::tryRead(ryml::csubstr key, OutputType& outputValue) const
 {
-	if (_invalid)
+	if (_invalid || !_node.is_map())
 		return false;
 	if (!_index)
 	{
-		if (!_node.is_map())
-			return false;
 		const auto& child = _node.find_child(key);
 		if (child.invalid())
 			return false;
 		if (!read(child, &outputValue))
-			ryml::error(_node.tree()->callbacks(), "Could not deserialize value!", 29, getLocationInFile());
+		{
+			ryml::Location loc = _root->getLocationInFile(child);
+			throw std::runtime_error(c4::formatrs<std::string>("{}:{}:{} ERROR: {}", loc.name, loc.line, loc.col, "Could not deserialize value!"));
+		}
 		return true;
 	}
 	if (!_index->count(key))
 		return false;
 	if (!read(_node.tree()->cref(_index->at(key)), &outputValue))
-		ryml::error(_node.tree()->callbacks(), "Could not deserialize value!", 29, getLocationInFile());
+	{
+		ryml::Location loc = _root->getLocationInFile(_node.tree()->cref(_index->at(key)));
+		throw std::runtime_error(c4::formatrs<std::string>("{}:{}:{} ERROR: {}", loc.name, loc.line, loc.col, "Could not deserialize value!"));
+	}
 	return true;
 }
 
@@ -339,7 +352,10 @@ bool YamlNodeReader::tryReadVal(OutputType& outputValue) const
 	if (_invalid)
 		return false;
 	if (!read(_node, &outputValue))
-		ryml::error(_node.tree()->callbacks(), "Could not deserialize value!", 29, getLocationInFile());
+	{
+		ryml::Location loc = getLocationInFile();
+		throw std::runtime_error(c4::formatrs<std::string>("{}:{}:{} ERROR: {}", loc.name, loc.line, loc.col, "Could not deserialize value!"));
+	}
 	return true;
 }
 

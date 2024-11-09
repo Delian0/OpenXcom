@@ -213,11 +213,7 @@ const YamlString YamlNodeReader::emitDescendants() const
 
 ryml::Location YamlNodeReader::getLocationInFile() const
 {
-	// line and column here are 0-based, which isn't correct.
-	ryml::Location loc = _root->getLocationInFile(_node);
-	loc.line += 1; 
-	loc.col += 1;
-	return loc;
+	return _root->getLocationInFile(_node);
 }
 
 const YamlNodeReader YamlNodeReader::operator[](ryml::csubstr key) const
@@ -288,7 +284,13 @@ YamlNodeReader YamlRootNodeReader::sansRoot() const
 ryml::Location YamlRootNodeReader::getLocationInFile(const ryml::ConstNodeRef& node) const
 {
 	if (_parser && _root)
-		return _parser->location(node);
+	{
+		// line and column here are 0-based, which isn't correct.
+		ryml::Location loc = _parser->location(node);
+		loc.line += 1;
+		loc.col += 1;
+		return loc;
+	}
 	else
 		throw std::runtime_error("Parsed yaml without location data logging enabled");
 }
