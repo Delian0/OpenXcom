@@ -166,7 +166,7 @@ private:
 
 	ryml::Location getLocationInFile(const ryml::ConstNodeRef& node) const;
 
-	void Parse(const ryml::csubstr& yaml, std::string fileName, bool withNodeLocations);
+	void Parse(ryml::csubstr yaml, std::string fileName, bool withNodeLocations);
 
 public:
 	YamlRootNodeReader(std::string fullFilePath, bool onlyInfoHeader);

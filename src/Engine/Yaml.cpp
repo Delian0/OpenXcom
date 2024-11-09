@@ -254,8 +254,10 @@ YamlRootNodeReader::YamlRootNodeReader(const YamlString& yamlString, std::string
 	Parse(ryml::to_csubstr(yamlString.yaml), description, false);
 }
 
-void YamlRootNodeReader::Parse(const ryml::csubstr& yaml, std::string fileNameForError, bool withNodeLocations)
+void YamlRootNodeReader::Parse(ryml::csubstr yaml, std::string fileNameForError, bool withNodeLocations)
 {
+	if (yaml.len > 3 && yaml.first(3) == "\xEF\xBB\xBF") // skip UTF-8 BOM
+		yaml = yaml.offs(3, 0);
 	_eventHandler = new ryml::EventHandlerTree(_tree->callbacks());
 	_parser = new ryml::Parser(_eventHandler, ryml::ParserOptions().locations(withNodeLocations));
 	_fileName = fileNameForError;
