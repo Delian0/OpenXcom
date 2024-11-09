@@ -96,13 +96,13 @@ void MapScript::load(const YAML::YamlNodeReader& r)
 	}
 
 
-	for (const auto& reactReader : reader["rects"].children())
+	for (const auto& rectReader : reader["rects"].children())
 	{
 		SDL_Rect* rect = new SDL_Rect();
-		rect->x = reactReader[0].readVal<int>();
-		rect->y = reactReader[1].readVal<int>();
-		rect->w = reactReader[2].readVal<int>();
-		rect->h = reactReader[3].readVal<int>();
+		rect->x = rectReader[0].readVal<int>();
+		rect->y = rectReader[1].readVal<int>();
+		rect->w = rectReader[2].readVal<int>();
+		rect->h = rectReader[3].readVal<int>();
 		_rects.push_back(rect);
 	}
 	if (const auto& craftGroups = reader["craftGroups"])
