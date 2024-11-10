@@ -61,9 +61,8 @@ struct BattleUnitKills
 	}
 
 	/// Load
-	void load(const YAML::YamlNodeReader& r)
+	void load(const YAML::YamlNodeReader& reader)
 	{
-		const auto& reader = r.useIndex();
 		reader.tryRead("name", name);
 		reader.tryRead("type", type);
 		reader.tryRead("rank", rank);
