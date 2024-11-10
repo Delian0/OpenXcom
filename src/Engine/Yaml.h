@@ -25,6 +25,7 @@
 #pragma warning(pop)
 #include <unordered_map>
 #include <c4/format.hpp>
+#include <c4/type_name.hpp>
 
 //hash function for ryml::csubstr for unordered_map -> just calls the same thing std::hash<std::string> does
 template <> struct std::hash<ryml::csubstr>{ std::size_t operator()(const ryml::csubstr& k) const {	return _Hash_array_representation(k.str, k.len); } };
@@ -330,7 +331,8 @@ bool YamlNodeReader::tryRead(ryml::csubstr key, OutputType& outputValue) const
 		if (!read(child, &outputValue))
 		{
 			ryml::Location loc = _root->getLocationInFile(child);
-			throw Exception(c4::formatrs<std::string>("{}:{}:{} ERROR: {}", loc.name, loc.line, loc.col, "Could not deserialize value!"));
+			c4::cspan<char> typeName = c4::type_name<OutputType>();
+			throw Exception(c4::formatrs<std::string>("{}:{}:{} ERROR: Could not deserialize value to type <{}>!", loc.name, loc.line, loc.col, ryml::csubstr(typeName.data(), typeName.size())));
 		}
 		return true;
 	}
@@ -339,7 +341,8 @@ bool YamlNodeReader::tryRead(ryml::csubstr key, OutputType& outputValue) const
 	if (!read(_node.tree()->cref(_index->at(key)), &outputValue))
 	{
 		ryml::Location loc = _root->getLocationInFile(_node.tree()->cref(_index->at(key)));
-		throw Exception(c4::formatrs<std::string>("{}:{}:{} ERROR: {}", loc.name, loc.line, loc.col, "Could not deserialize value!"));
+		c4::cspan<char> typeName = c4::type_name<OutputType>();
+		throw Exception(c4::formatrs<std::string>("{}:{}:{} ERROR: Could not deserialize value to type <{}>!", loc.name, loc.line, loc.col, ryml::csubstr(typeName.data(), typeName.size())));
 	}
 	return true;
 }
@@ -361,7 +364,8 @@ bool YamlNodeReader::tryReadVal(OutputType& outputValue) const
 	if (!read(_node, &outputValue))
 	{
 		ryml::Location loc = getLocationInFile();
-		throw std::runtime_error(c4::formatrs<std::string>("{}:{}:{} ERROR: {}", loc.name, loc.line, loc.col, "Could not deserialize value!"));
+		c4::cspan<char> typeName = c4::type_name<OutputType>();
+		throw Exception(c4::formatrs<std::string>("{}:{}:{} ERROR: Could not deserialize value to type <{}>!", loc.name, loc.line, loc.col, ryml::csubstr(typeName.data(), typeName.size())));
 	}
 	return true;
 }
