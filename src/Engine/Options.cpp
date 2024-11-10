@@ -1251,7 +1251,7 @@ bool load(const std::string &filename)
 			_setDefaultMods();
 		}
 	}
-	catch (std::runtime_error &e)
+	catch (YAML::Exception &e)
 	{
 		Log(LOG_WARNING) << e.what();
 		return false;
@@ -1290,7 +1290,7 @@ bool save(const std::string &filename)
 		}
 		yaml = writer.emit().yaml;
 	}
-	catch (std::runtime_error &e)
+	catch (YAML::Exception &e)
 	{
 		Log(LOG_WARNING) << e.what();
 		return false;

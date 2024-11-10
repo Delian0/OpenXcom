@@ -523,7 +523,7 @@ void CraftInfoState::btnNewBattleClick(Action *)
 			//difficulty = reader["difficulty"].readVal(0);
 			alienTech = reader["alienTech"].readVal(0);
 		}
-		catch (std::runtime_error& e)
+		catch (YAML::Exception& e)
 		{
 			Log(LOG_WARNING) << e.what();
 		}

@@ -61,6 +61,13 @@ struct YamlString
 	YamlString(std::string yamlString);
 };
 
+/// Basic exception class to distinguish YAML exceptions from the rest.
+class Exception : public std::runtime_error
+{
+public:
+	Exception(const std::string& msg);
+};
+
 class YamlNodeReader
 {
 protected:
@@ -145,9 +152,9 @@ public:
 
 	ryml::Location getLocationInFile() const;
 
-	/// Returns a child in the current mapping container or an invalid child. Throws if it's not a mapping container.
+	/// Returns a child in the current mapping container or an invalid child
 	const YamlNodeReader operator[](ryml::csubstr key) const;
-	/// Returns a child at a specific position or an invalid child.
+	/// Returns a child at a specific position or an invalid child
 	const YamlNodeReader operator[](size_t pos) const;
 	/// Returns whether the current node is valid
 	explicit operator bool() const;
@@ -273,8 +280,8 @@ OutputType YamlNodeReader::readKey() const
 	if (!tryReadKey(output))
 	{
 		if (_root)
-			throw std::runtime_error(c4::formatrs<std::string>("{} ERROR: {}", _root->_fileName, "Tried to deserialize invalid node's key!"));
-		throw std::runtime_error("Tried to deserialize invalid node's key!");
+			throw Exception(c4::formatrs<std::string>("{} ERROR: {}", _root->_fileName, "Tried to deserialize invalid node's key!"));
+		throw Exception("Tried to deserialize invalid node's key!");
 	}
 	return output;
 }
@@ -295,8 +302,8 @@ OutputType YamlNodeReader::readVal() const
 	if (!tryReadVal(output))
 	{
 		if (_root)
-			throw std::runtime_error(c4::formatrs<std::string>("{} ERROR: {}", _root->_fileName, "Tried to deserialize invalid node!"));
-		throw std::runtime_error("Tried to deserialize invalid node!");
+			throw Exception(c4::formatrs<std::string>("{} ERROR: {}", _root->_fileName, "Tried to deserialize invalid node!"));
+		throw Exception("Tried to deserialize invalid node!");
 	}
 	return output;
 }
@@ -323,7 +330,7 @@ bool YamlNodeReader::tryRead(ryml::csubstr key, OutputType& outputValue) const
 		if (!read(child, &outputValue))
 		{
 			ryml::Location loc = _root->getLocationInFile(child);
-			throw std::runtime_error(c4::formatrs<std::string>("{}:{}:{} ERROR: {}", loc.name, loc.line, loc.col, "Could not deserialize value!"));
+			throw Exception(c4::formatrs<std::string>("{}:{}:{} ERROR: {}", loc.name, loc.line, loc.col, "Could not deserialize value!"));
 		}
 		return true;
 	}
@@ -332,7 +339,7 @@ bool YamlNodeReader::tryRead(ryml::csubstr key, OutputType& outputValue) const
 	if (!read(_node.tree()->cref(_index->at(key)), &outputValue))
 	{
 		ryml::Location loc = _root->getLocationInFile(_node.tree()->cref(_index->at(key)));
-		throw std::runtime_error(c4::formatrs<std::string>("{}:{}:{} ERROR: {}", loc.name, loc.line, loc.col, "Could not deserialize value!"));
+		throw Exception(c4::formatrs<std::string>("{}:{}:{} ERROR: {}", loc.name, loc.line, loc.col, "Could not deserialize value!"));
 	}
 	return true;
 }

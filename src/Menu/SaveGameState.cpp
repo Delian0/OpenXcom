@@ -207,7 +207,7 @@ void SaveGameState::think()
 		{
 			error(e.what());
 		}
-		catch (std::runtime_error& e)
+		catch (YAML::Exception &e)
 		{
 			error(e.what());
 		}

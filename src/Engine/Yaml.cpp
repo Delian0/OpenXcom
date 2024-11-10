@@ -28,6 +28,10 @@ namespace OpenXcom
 namespace YAML
 {
 
+Exception::Exception(const std::string& msg) : runtime_error(msg)
+{
+}
+
 /// Custom error handler; For now it doesn't do anything
 struct YamlErrorHandler
 {
@@ -47,7 +51,7 @@ C4_NORETURN void YamlErrorHandler::on_error(const char* msg, size_t len, ryml::L
 	std::string full_msg = c4::formatrs<std::string>(
 		"File:{} Line:{} Column:{} ERROR: {}",
 		loc.name, loc.line, loc.col, ryml::csubstr(msg, len));*/
-	throw std::runtime_error(msg); // This function must not return
+	throw Exception(msg); // This function must not return
 }
 ryml::Callbacks YamlErrorHandler::callbacks()
 {
@@ -294,7 +298,7 @@ ryml::Location YamlRootNodeReader::getLocationInFile(const ryml::ConstNodeRef& n
 		return loc;
 	}
 	else
-		throw std::runtime_error("Parsed yaml without location data logging enabled");
+		throw Exception("Parsed yaml without location data logging enabled");
 }
 
 YamlNodeWriter::YamlNodeWriter(const YamlRootNodeWriter* root, ryml::NodeRef node) : _node(node), _root(root)

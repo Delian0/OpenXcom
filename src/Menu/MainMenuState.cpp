@@ -175,7 +175,7 @@ MainMenuState::MainMenuState(bool updateCheck)
 							}
 							CrossPlatform::deleteFile(updateMetadataFilename);
 						}
-						catch (std::runtime_error& e)
+						catch (YAML::Exception &e)
 						{
 							Log(LOG_ERROR) << e.what();
 						}

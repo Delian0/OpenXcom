@@ -455,7 +455,7 @@ void NewBattleState::load(const std::string &filename)
 				initSave();
 			}
 		}
-		catch (std::runtime_error &e)
+		catch (YAML::Exception &e)
 		{
 			Log(LOG_WARNING) << e.what();
 			initSave();

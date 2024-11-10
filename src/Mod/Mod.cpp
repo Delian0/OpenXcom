@@ -2439,7 +2439,7 @@ void Mod::loadMod(const std::vector<FileMap::FileRecord> &rulesetFiles, ModScrip
 		{
 			throw Exception(filerec.fullpath + ": " + std::string(e.what()));
 		}
-		catch (std::runtime_error &e)
+		catch (YAML::Exception &e)
 		{
 			throw Exception(filerec.fullpath + ": " + std::string(e.what()));
 		}
