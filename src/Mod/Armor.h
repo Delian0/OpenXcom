@@ -66,8 +66,8 @@ struct ArmorMoveCost
 	{
 		if (!reader)
 			return;
-		TimePercent = reader[0].readVal<Uint8>();
-		EnergyPercent = reader[1].readVal<Uint8>();
+		TimePercent = reader[0].readVal<int>();
+		EnergyPercent = reader[1].readVal<int>();
 	}
 	void save(YAML::YamlNodeWriter writer, const char* name) const
 	{
