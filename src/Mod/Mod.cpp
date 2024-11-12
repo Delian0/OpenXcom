@@ -2586,6 +2586,7 @@ void Mod::loadResourceConfigFile(const FileMap::FileRecord &filerec)
 						};
 						std::reverse(std::begin(_transparencies[start + curr]), std::end(_transparencies[start + curr]));
 					}
+					curr++;
 				}
 			}
 			else
