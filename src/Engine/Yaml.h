@@ -18,11 +18,18 @@
  * along with OpenXcom.  If not, see <http://www.gnu.org/licenses/>.
  */
 
+// the support for vector/map that rapidyaml provides is sadly not backward-compatible with yaml-cpp's due to
+// the fact that yaml-cpp clears collections before deserializing into them. These define's disable the support.
+#define _C4_YML_STD_MAP_HPP_
+#define _C4_YML_STD_VECTOR_HPP_
+
 #pragma warning(push)
 #pragma warning(disable : 4668 6011 6255 6293 6386 26439 26495 26498 26819)
 #include "../../libs/rapidyaml/ryml.hpp"
 #include "../../libs/rapidyaml/ryml_std.hpp"
 #pragma warning(pop)
+#include <map>
+#include <vector>
 #include <unordered_map>
 #include <c4/format.hpp>
 #include <c4/type_name.hpp>
@@ -435,4 +442,78 @@ namespace c4::yml
 {
 // Serializing bool should output the string version instead of 0 and 1
 void write(ryml::NodeRef* n, bool const& val);
+
+// Copy from c4/yml/std/vector.hpp
+template <class V, class Alloc>
+void write(c4::yml::NodeRef* n, std::vector<V, Alloc> const& vec)
+{
+	*n |= c4::yml::SEQ;
+	for (V const& v : vec)
+		n->append_child() << v;
+}
+
+// Backwards-compatibility: deserializing into a vector should clear the colletion before adding to it
+template <class V, class Alloc>
+bool read(c4::yml::ConstNodeRef const& n, std::vector<V, Alloc>* vec)
+{
+	vec->clear();
+	C4_SUPPRESS_WARNING_GCC_WITH_PUSH("-Wuseless-cast")
+	vec->resize(static_cast<size_t>(n.num_children()));
+	C4_SUPPRESS_WARNING_GCC_POP
+	size_t pos = 0;
+	for (ConstNodeRef const child : n)
+		child >> (*vec)[pos++];
+	return true;
+}
+
+// Backwards-compatibility: deserializing into a vector should clear the colletion before adding to it
+/** specialization: std::vector<bool> uses std::vector<bool>::reference as
+ * the return value of its operator[]. */
+template <class Alloc>
+bool read(c4::yml::ConstNodeRef const& n, std::vector<bool, Alloc>* vec)
+{
+	vec->clear();
+	C4_SUPPRESS_WARNING_GCC_WITH_PUSH("-Wuseless-cast")
+	vec->resize(static_cast<size_t>(n.num_children()));
+	C4_SUPPRESS_WARNING_GCC_POP
+	size_t pos = 0;
+	bool tmp = {};
+	for (ConstNodeRef const child : n)
+	{
+		child >> tmp;
+		(*vec)[pos++] = tmp;
+	}
+	return true;
+}
+
+// Copy from c4/yml/std/map.hpp
+template <class K, class V, class Less, class Alloc>
+void write(c4::yml::NodeRef* n, std::map<K, V, Less, Alloc> const& m)
+{
+	*n |= c4::yml::MAP;
+	for (auto const& C4_RESTRICT p : m)
+	{
+		auto ch = n->append_child();
+		ch << c4::yml::key(p.first);
+		ch << p.second;
+	}
+}
+
+// Backwards-compatibility: deserializing into maps should clear the colletion before adding to it
+// Also, element constructor inside the loop
+template <class K, class V, class Less, class Alloc>
+bool read(c4::yml::ConstNodeRef const& n, std::map<K, V, Less, Alloc>* m)
+{
+	m->clear();
+	for (auto const& C4_RESTRICT ch : n)
+	{
+		K k{};
+		V v{};
+		ch >> c4::yml::key(k);
+		ch >> v;
+		m->emplace(std::make_pair(std::move(k), std::move(v)));
+	}
+	return true;
+}
+
 }
