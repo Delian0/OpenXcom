@@ -538,7 +538,7 @@ void RuleItem::load(const YAML::YamlNodeReader& r, Mod *mod, const ModScript& pa
 		{
 			mod->loadUnorderedNames(_type, _compatibleAmmoNames[offset], n["compatibleAmmo"]);
 			n.tryRead("tuLoad", _tuLoad[offset]);
-			n.tryRead("tuUnload", _tuLoad[offset]);
+			n.tryRead("tuUnload", _tuUnload[offset]);
 		}
 	};
 
