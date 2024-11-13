@@ -276,6 +276,11 @@ std::vector<SaveInfo> SavedGame::getList(Language *lang, bool autoquick)
 			Log(LOG_ERROR) << filename << ": " << e.what();
 			continue;
 		}
+		catch (YAML::Exception& e)
+		{
+			Log(LOG_ERROR) << filename << ": " << e.what();
+			continue;
+		}
 	}
 
 	return info;
