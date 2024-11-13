@@ -249,6 +249,14 @@ void SavedBattleGame::load(const YAML::YamlNodeReader& r, Mod *mod, SavedGame* s
 	unitIndex.reserve(_units.capacity());
 	itemIndex.reserve(_items.capacity() + _recoverConditional.capacity() + _recoverGuaranteed.capacity());
 
+	auto findUnitById = [&](const YAML::YamlNodeReader& reader) -> BattleUnit*
+	{
+		int id = reader.readVal(-1);
+		if (id == -1 || !unitIndex.count(id))
+			return nullptr;
+		return unitIndex.at(id);
+	};
+
 	// units 1st pass
 	for (const auto& unitReader : reader["units"].children())
 	{
@@ -308,23 +316,16 @@ void SavedBattleGame::load(const YAML::YamlNodeReader& r, Mod *mod, SavedGame* s
 			BattleItem* item = new BattleItem(mod->getItem(type), &id); //passing id as a pointer to serve as a counter is no longer used
 			item->load(itemReader, mod, this->getMod()->getScriptGlobal());
 
-			int ownerId = itemReader["owner"].readVal(0);
-			if (ownerId && unitIndex.count(ownerId))
+			if (BattleUnit* owner = findUnitById(itemReader["owner"]))
 			{
-				BattleUnit* bu = unitIndex.at(ownerId);
-				item->setOwner(bu);
+				item->setOwner(owner);
 				if (item->isSpecialWeapon())
-					bu->addLoadedSpecialWeapon(item);
+					owner->addLoadedSpecialWeapon(item);
 				else
-					bu->getInventory()->push_back(item);
+					owner->getInventory()->push_back(item);
 			}
-			int previousOwnerId = itemReader["previousOwner"].readVal(0);
-			if (previousOwnerId && unitIndex.count(previousOwnerId))
-				item->setPreviousOwner(unitIndex.at(previousOwnerId));
-
-			int unitId = itemReader["unit"].readVal(0);
-			if (unitId && unitIndex.count(unitId))
-				item->setUnit(unitIndex.at(unitId));
+			item->setPreviousOwner(findUnitById(itemReader["previousOwner"]));
+			item->setUnit(findUnitById(itemReader["unit"]));
 
 			// match up items and tiles
 			if (item->getSlot() && item->getSlot()->getType() == INV_GROUND)
@@ -343,12 +344,12 @@ void SavedBattleGame::load(const YAML::YamlNodeReader& r, Mod *mod, SavedGame* s
 	// units 2nd pass
 	for (const auto& unitReader : reader["units"].children())
 	{
-		BattleUnit* bu = unitIndex.at(unitReader["id"].readVal<int>());
-		if (!bu->isIgnored() && bu->getStatus() != STATUS_DEAD)
-			bu->setSpecialWeapon(this, true); // Note: this is for backwards-compatibility with older saves
-		int previousOwnerId = unitReader["previousOwner"].readVal(0);
-		if (previousOwnerId && unitIndex.count(previousOwnerId))
-			bu->setPreviousOwner(unitIndex.at(previousOwnerId));
+		if (BattleUnit* bu = findUnitById(unitReader["id"])) //not guaranteed that the unit was created
+		{
+			if (!bu->isIgnored() && bu->getStatus() != STATUS_DEAD)
+				bu->setSpecialWeapon(this, true); // Note: this is for backwards-compatibility with older saves
+			bu->setPreviousOwner(findUnitById(unitReader["previousOwner"]));
+		}
 	}
 
 	// items 2nd pass
