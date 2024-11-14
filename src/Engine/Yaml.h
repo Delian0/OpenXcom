@@ -35,7 +35,8 @@
 #include <c4/type_name.hpp>
 
 //hash function for ryml::csubstr for unordered_map -> just calls the same thing std::hash<std::string> does
-template <> struct std::hash<ryml::csubstr>{ std::size_t operator()(const ryml::csubstr& k) const {	return _Hash_array_representation(k.str, k.len); } };
+template <>
+struct std::hash<ryml::csubstr> { std::size_t operator()(const ryml::csubstr& k) const; };
 
 namespace OpenXcom
 {

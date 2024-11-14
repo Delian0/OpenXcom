@@ -395,6 +395,15 @@ YamlNodeWriter YamlRootNodeWriter::sansRoot()
 
 } // namespace OpenXcom end
 
+std::size_t std::hash<ryml::csubstr>::operator()(const ryml::csubstr& k) const
+{
+#ifdef _MSC_VER
+	return _Hash_array_representation(k.str, k.len);
+#else
+	return std::hash<std::string>{}(std::string(k.str, k.len));
+#endif
+};
+
 namespace std
 {
 
