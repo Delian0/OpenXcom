@@ -296,11 +296,13 @@ void SavedBattleGame::load(const YAML::YamlNodeReader& r, Mod *mod, SavedGame* s
 		_units.push_back(unit);
 	}
 
-	std::vector<std::pair<const char*, std::vector<BattleItem*>* > > itemKeysAndVectors =
-		{{"items", &_items},
-		 {"recoverConditional", &_recoverConditional},
-		 {"recoverGuaranteed", &_recoverGuaranteed},
-		 {"itemsSpecial", &_items}};
+	std::pair<const char*, std::vector<BattleItem*>*> itemKeysAndVectors[] =
+	{
+		{ "items", &_items },
+		{ "recoverConditional", &_recoverConditional },
+		{ "recoverGuaranteed", &_recoverGuaranteed },
+		{ "itemsSpecial", &_items },
+	};
 	// items 1st pass
 	for (auto& keyAndVector : itemKeysAndVectors)
 	{
