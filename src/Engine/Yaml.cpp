@@ -167,7 +167,7 @@ bool YamlNodeReader::hasVal() const
 
 bool YamlNodeReader::hasNullVal() const
 {
-	return _node.val_is_null();
+	return _node.has_val() && _node.val_is_null();
 }
 
 bool YamlNodeReader::hasValTag() const
