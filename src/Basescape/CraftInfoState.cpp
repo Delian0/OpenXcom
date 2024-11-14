@@ -514,7 +514,7 @@ void CraftInfoState::btnNewBattleClick(Action *)
 	{
 		try
 		{
-			YAML::YamlRootNodeReader reader(s, false);
+			YAML::YamlRootNodeReader reader(s);
 			mission = reader["mission"].readVal(0);
 			//craft = reader["craft"].readVal(0);
 			darkness = reader["darkness"].readVal(0);

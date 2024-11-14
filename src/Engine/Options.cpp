@@ -1228,7 +1228,7 @@ bool load(const std::string &filename)
 	std::string s = _configFolder + filename + ".cfg";
 	try
 	{
-		YAML::YamlRootNodeReader reader(s, false);
+		YAML::YamlRootNodeReader reader(s);
 		// Ignore old options files
 		if (reader["options"]["NewBattleMission"])
 		{

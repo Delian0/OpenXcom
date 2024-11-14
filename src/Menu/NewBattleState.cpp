@@ -395,7 +395,7 @@ void NewBattleState::load(const std::string &filename)
 	{
 		try
 		{
-			YAML::YamlRootNodeReader cfgReader(s, false);
+			YAML::YamlRootNodeReader cfgReader(s);
 			_cbxMission->setSelected(std::min(cfgReader["mission"].readVal<size_t>(0), _missionTypes.size() - 1));
 			cbxMissionChange(0);
 			_cbxCraft->setSelected(std::min(cfgReader["craft"].readVal<size_t>(0), _crafts.size() - 1));

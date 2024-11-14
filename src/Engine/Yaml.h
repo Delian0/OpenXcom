@@ -191,7 +191,7 @@ private:
 	void Parse(ryml::csubstr yaml, std::string fileName, bool withNodeLocations);
 
 public:
-	YamlRootNodeReader(std::string fullFilePath, bool onlyInfoHeader);
+	YamlRootNodeReader(std::string fullFilePath, bool onlyInfoHeader = false);
 	YamlRootNodeReader(char* data, size_t size, std::string fileNameForError);
 	YamlRootNodeReader(const YamlString& yamlString, std::string description);
 	~YamlRootNodeReader();
