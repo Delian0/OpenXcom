@@ -21,6 +21,7 @@
 #include "../Mod/Mod.h"
 #include "../Engine/Collections.h"
 #include "BattleItem.h"
+#include <optional>
 
 namespace OpenXcom
 {
@@ -152,10 +153,6 @@ void EquipmentLayoutItem::load(const YAML::YamlNodeReader& reader, const Mod* mo
 	_slot = mod->getInventory(reader["slot"].readVal<std::string>(), true);
 	_slotX = reader["slotX"].readVal(0);
 	_slotY = reader["slotY"].readVal(0);
-	if (const auto& ammo = reader["ammoItem"])
-	{
-		_ammoItem[0] = mod->getItem(ammo.readVal<std::string>(), true);
-	}
 	if (const auto& ammoSlots = reader["ammoItemSlots"])
 	{
 		for (int slot = 0; slot < RuleItem::AmmoSlotMax && ammoSlots[slot]; ++slot)
@@ -163,6 +160,10 @@ void EquipmentLayoutItem::load(const YAML::YamlNodeReader& reader, const Mod* mo
 			auto s = ammoSlots[slot].readVal<std::string>();
 			_ammoItem[slot] = s != EmptyPlaceHolder ? mod->getItem(s, true) : nullptr;
 		}
+	}
+	else if (const auto& ammo = reader["ammoItem"])
+	{
+		_ammoItem[0] = mod->getItem(ammo.readVal<std::string>(), true);
 	}
 	_fuseTimer = reader["fuseTimer"].readVal(-1);
 	_fixed = reader["fixed"].readVal(false);
@@ -184,13 +185,23 @@ void EquipmentLayoutItem::save(YAML::YamlNodeWriter writer) const
 	if (_slotY != 0)
 		writer.write("slotY", _slotY);
 	if (_ammoItem[0] != nullptr)
-	{
 		writer.write("ammoItem", _ammoItem[0]->getType());
-		auto ammoSlotWriter = writer["ammoItemSlots"];
-		ammoSlotWriter.setAsSeq();
-		for (int slot = 0; slot < RuleItem::AmmoSlotMax && _ammoItem[slot]; ++slot)
-			ammoSlotWriter.write(_ammoItem[slot] ? _ammoItem[slot]->getType() : EmptyPlaceHolder);
-	}
+	std::optional<YAML::YamlNodeWriter> ammoSlotWriter;
+	Collections::untilLastIf(
+		_ammoItem,
+		[](const RuleItem* s)
+		{
+			return s != nullptr;
+		},
+		[&](const RuleItem* s)
+		{
+			if (!ammoSlotWriter.has_value())
+			{
+				ammoSlotWriter = writer["ammoItemSlots"];
+				ammoSlotWriter->setAsSeq();
+			}
+			ammoSlotWriter->write(s ? s->getType() : EmptyPlaceHolder);
+		});
 	if (_fuseTimer >= 0)
 		writer.write("fuseTimer", _fuseTimer);
 	if (_fixed)

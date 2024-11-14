@@ -34,6 +34,7 @@
 #include "../Engine/RNG.h"
 #include "../Battlescape/Particle.h"
 #include "../fmath.h"
+#include <optional>
 
 namespace OpenXcom
 {
@@ -163,14 +164,24 @@ void BattleItem::save(YAML::YamlNodeWriter writer, const ScriptGlobal *shared) c
 	if (_ammoQuantity)
 		writer.write("ammoqty", _ammoQuantity);
 	if (_ammoItem[0])
-	{
 		writer.write("ammoItem", _ammoItem[0]->getId());
-		auto ammoSlotWriter = writer["ammoItemSlots"];
-		ammoSlotWriter.setAsSeq();
-		ammoSlotWriter.setFlowStyle();
-		for (int i = 0; i < RuleItem::AmmoSlotMax && _ammoItem[i] != nullptr; i++)
-			ammoSlotWriter.write(_ammoItem[i] ? _ammoItem[i]->getId() : -1);
-	}
+	std::optional<YAML::YamlNodeWriter> ammoSlotWriter;
+	Collections::untilLastIf(
+		_ammoItem,
+		[](BattleItem* i)
+		{
+			return i != nullptr;
+		},
+		[&](BattleItem* i)
+		{
+			if (!ammoSlotWriter.has_value())
+			{
+				ammoSlotWriter = writer["ammoItemSlots"];
+				ammoSlotWriter->setAsSeq();
+				ammoSlotWriter->setFlowStyle();
+			}
+			ammoSlotWriter->write(i ? i->getId() : -1);
+		});
 	if (_rules && _rules->getBattleType() == BT_MEDIKIT)
 	{
 		writer.write("painKiller", _painKiller);
