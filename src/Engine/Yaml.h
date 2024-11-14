@@ -63,6 +63,7 @@ void setGlobalErrorHandler();
 class YamlRootNodeReader;
 class YamlRootNodeWriter;
 
+/// Basic string wrapper to differentiate from normal strings
 struct YamlString
 {
 	std::string yaml;
@@ -97,7 +98,7 @@ public:
 
 
 	/// Deserializes the value of the found child into the outputValue. If the node is invalid or the key doesn't exist, outputValue is set to defaultValue.
-	template <typename OutputType>
+	template <typename OutputType> // Name conflicts if renamed to "read"
 	void readN(ryml::csubstr key, OutputType& outputValue, const OutputType& defaultValue) const;
 
 	/// Returns a deserialized key of the current node. Throws if the node is invalid or itself has no key.
@@ -133,17 +134,23 @@ public:
 	bool tryReadVal(OutputType& outputValue) const;
 
 
-	/// Returns the number of children of the current node. O(n) complexity.
+	/// Returns the number of children of the current node. O(n) complexity, or O(1) if index is used.
 	size_t childrenCount() const;
 
 	/// Builds a vector of children and retuns it
 	std::vector<YamlNodeReader> children() const;
 
+	/// Returns whether the current node is valid. Just use the bool operator instead.
 	bool isValid() const;
+	/// Returns true if the current node is a mapping container
 	bool isMap() const;
+	/// Returns true if the current node is a sequence container
 	bool isSeq() const;
+	/// Returns true if the current node has a scalar value (empty strings and null constants count)
 	bool hasVal() const;
+	/// Returns true if the current node has a scalar value and this value is one of the null constants
 	bool hasNullVal() const;
+	/// Returns true if the current node has a scalar value and an explicit tag
 	bool hasValTag() const;
 
 	/// Returns true if the node is valid, has a tag, and the tag is a core tag
@@ -157,7 +164,7 @@ public:
 	const YamlString emit() const;
 	/// Serializes the node's descendants to a YamlString
 	const YamlString emitDescendants() const;
-
+	/// Returns an object that contains data on where the current node is located in the original yaml
 	ryml::Location getLocationInFile() const;
 
 	/// Returns a child in the current mapping container or an invalid child
@@ -236,7 +243,7 @@ public:
 	void setFlowStyle();
 	/// Marks the current node to serialize as multi-line block-style
 	void setBlockStyle();
-	/// Marks the current node to 
+	/// Marks the current node to serialize the scalar in double quotes
 	void setAsQuoted();
 
 	void unsetAsMap();
@@ -452,7 +459,7 @@ void write(c4::yml::NodeRef* n, std::vector<V, Alloc> const& vec)
 		n->append_child() << v;
 }
 
-// Backwards-compatibility: deserializing into a vector should clear the colletion before adding to it
+// Backwards-compatibility: deserializing into a vector should clear the collection before adding to it
 template <class V, class Alloc>
 bool read(c4::yml::ConstNodeRef const& n, std::vector<V, Alloc>* vec)
 {
@@ -466,7 +473,7 @@ bool read(c4::yml::ConstNodeRef const& n, std::vector<V, Alloc>* vec)
 	return true;
 }
 
-// Backwards-compatibility: deserializing into a vector should clear the colletion before adding to it
+// Backwards-compatibility: deserializing into a vector should clear the collection before adding to it
 /** specialization: std::vector<bool> uses std::vector<bool>::reference as
  * the return value of its operator[]. */
 template <class Alloc>
@@ -499,7 +506,7 @@ void write(c4::yml::NodeRef* n, std::map<K, V, Less, Alloc> const& m)
 	}
 }
 
-// Backwards-compatibility: deserializing into maps should clear the colletion before adding to it
+// Backwards-compatibility: deserializing into maps should clear the collection before adding to it
 // Also, element constructor inside the loop
 template <class K, class V, class Less, class Alloc>
 bool read(c4::yml::ConstNodeRef const& n, std::map<K, V, Less, Alloc>* m)
