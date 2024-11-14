@@ -40,19 +40,6 @@ template <> struct std::hash<ryml::csubstr>{ std::size_t operator()(const ryml::
 namespace OpenXcom
 {
 
-// Deserialization template for enums. We have to overload from_chars() instead of read(), because read() already has a template for all types -> template conflict
-template <typename EnumType>
-typename std::enable_if<std::is_enum<EnumType>::value, bool>::type inline from_chars(ryml::csubstr buf, EnumType* v) noexcept
-{
-	return ryml::atoi(buf, (int*)v);
-}
-
-template <typename EnumType>
-typename std::enable_if<std::is_enum<EnumType>::value, size_t>::type inline to_chars(ryml::substr buf, EnumType v) noexcept
-{
-	return ryml::itoa(buf, (int)v);
-}
-
 namespace YAML
 {
 
@@ -416,6 +403,19 @@ inline void YamlNodeWriter::setValue(const InputType& inputValue)
 }
 
 } //namespace YAML end
+
+// Deserialization template for enums. We have to overload from_chars() instead of read(), because read() already has a template for all types -> template conflict
+template <typename EnumType>
+typename std::enable_if<std::is_enum<EnumType>::value, bool>::type inline from_chars(ryml::csubstr buf, EnumType* v) noexcept
+{
+	return ryml::atoi(buf, (int*)v);
+}
+
+template <typename EnumType>
+typename std::enable_if<std::is_enum<EnumType>::value, size_t>::type inline to_chars(ryml::substr buf, EnumType v) noexcept
+{
+	return ryml::itoa(buf, (int)v);
+}
 
 } //namespace OpenXcom end
 
