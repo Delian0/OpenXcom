@@ -2245,6 +2245,8 @@ void Mod::loadAll()
 		}
 	}
 
+	_ruleCreationTracking.clear();
+	_ruleLastUpdateTracking.clear();
 
 	loadExtraResources();
 
@@ -2688,7 +2690,7 @@ void Mod::loadFile(const FileMap::FileRecord &filerec, ModScript &parsers)
 			if (false == checkForSoftError(file == nullptr, "extended", t, "Unknown file name for 'tagsFile': '" + filePath + "'", LOG_ERROR))
 			{
 				//copy only tags and load them in current file.
-				YAML::YamlRootNodeReader tempReader = file->getYAML();
+				const YAML::YamlRootNodeReader& tempReader = file->getYAML();
 				std::map<std::string, std::map<std::string, std::string> > tempTags;
 				tempReader["extended"].tryRead("tags", tempTags);
 				YAML::YamlRootNodeWriter tempExtended;

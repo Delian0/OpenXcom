@@ -155,7 +155,7 @@ MainMenuState::MainMenuState(bool updateCheck)
 						checkProgress = 4;
 						try
 						{
-							YAML::YamlRootNodeReader reader(updateMetadataFilename, false);
+							YAML::YamlRootNodeReader reader(updateMetadataFilename);
 							checkProgress = 5;
 							if (reader["updateInfo"])
 							{
@@ -201,7 +201,7 @@ MainMenuState::MainMenuState(bool updateCheck)
 		// common
 		try
 		{
-			YAML::YamlRootNodeReader reader = FileMap::getYAML("dont-touch.me");
+			const YAML::YamlRootNodeReader& reader = FileMap::getYAML("dont-touch.me");
 			if (reader["version"])
 			{
 				if (CrossPlatform::isLowerThanRequiredVersion(reader["version"].readVal<std::string>()))
