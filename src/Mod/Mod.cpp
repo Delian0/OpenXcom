@@ -2245,9 +2245,6 @@ void Mod::loadAll()
 		}
 	}
 
-	_ruleCreationTracking.clear();
-	_ruleLastUpdateTracking.clear();
-
 	loadExtraResources();
 
 
