@@ -319,7 +319,6 @@ void Armor::afterLoad(const Mod* mod)
 	// calcualte final surfaces used by layers
 	if (!_layersDefaultPrefix.empty())
 	{
-		std::stringstream ss;
 		for (auto& version : _layersDefinition)
 		{
 			int layerIndex = 0;
@@ -327,21 +326,20 @@ void Armor::afterLoad(const Mod* mod)
 			{
 				if (!layerItem.empty())
 				{
-					ss.str("");
+					static char buf[512] = {};
+					static c4::substr ss = buf;
+					size_t len;
 					auto pre = _layersSpecificPrefix.find(layerIndex);
 					if (pre != _layersSpecificPrefix.end())
 					{
-						ss << pre->second;
+						len = c4::format(buf, "{}__{}__{}", pre->second, layerIndex, layerItem);
 					}
 					else
 					{
-						ss << _layersDefaultPrefix;
+						len = c4::format(buf, "{}__{}__{}", _layersDefaultPrefix, layerIndex, layerItem);
 					}
-					ss << "__" << layerIndex << "__" << layerItem;
-
-					//override element in vector
-					layerItem = ss.str();
-
+					layerItem.assign(ss.str, len);
+					
 					//check if surface is valid
 					if (Options::lazyLoadResources == false)
 					{
