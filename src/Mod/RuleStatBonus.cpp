@@ -308,10 +308,13 @@ void RuleStatBonus::load(const std::string& parentName, const YAML::YamlNodeRead
 			_bonusOrig.clear();
 			if (stats.isMap())
 			{
-				for (const auto& stat : statDataMap)
+				for (const auto& dd : stats.children())
 				{
-					if (const auto& dd = stats[ryml::to_csubstr(stat.name)])
+					std::string key = dd.readKey<std::string>();
+					for (size_t statIndex = 0; statIndex < std::size(statDataMap); statIndex++)
 					{
+						if (key != statDataMap[statIndex].name)
+							continue;
 						std::vector<float> vec;
 						if (dd.hasVal())
 						{
@@ -329,7 +332,8 @@ void RuleStatBonus::load(const std::string& parentName, const YAML::YamlNodeRead
 								}
 							}
 						}
-						_bonusOrig.push_back(std::make_pair(stat.name, std::move(vec)));
+						_bonusOrig.push_back(std::make_pair(statDataMap[statIndex].name, std::move(vec)));
+						break;
 					}
 				}
 				_refresh = true;
