@@ -338,15 +338,17 @@ bool YamlNodeReader::tryRead(ryml::csubstr key, OutputType& outputValue) const
 		}
 		return true;
 	}
-	if (!_index->count(key))
-		return false;
-	if (!read(_node.tree()->cref(_index->at(key)), &outputValue))
+	if (const auto& keyNodeIdPair = _index->find(key); keyNodeIdPair != _index->end())
 	{
-		ryml::Location loc = _root->getLocationInFile(_node.tree()->cref(_index->at(key)));
-		c4::cspan<char> typeName = c4::type_name<OutputType>();
-		throw Exception(c4::formatrs<std::string>("{}:{}:{} ERROR: Could not deserialize value to type <{}>!", loc.name, loc.line, loc.col, ryml::csubstr(typeName.data(), typeName.size())));
+		if (!read(_node.tree()->cref(keyNodeIdPair->second), &outputValue))
+		{
+			ryml::Location loc = _root->getLocationInFile(_node.tree()->cref(_index->at(key)));
+			c4::cspan<char> typeName = c4::type_name<OutputType>();
+			throw Exception(c4::formatrs<std::string>("{}:{}:{} ERROR: Could not deserialize value to type <{}>!", loc.name, loc.line, loc.col, ryml::csubstr(typeName.data(), typeName.size())));
+		}
+		return true;
 	}
-	return true;
+	return false;
 }
 
 template <typename OutputType>

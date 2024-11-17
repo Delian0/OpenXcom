@@ -129,9 +129,9 @@ ryml::ConstNodeRef YamlNodeReader::getChildNode(const ryml::csubstr& key) const
 			return ryml::ConstNodeRef(_node.tree(), ryml::NONE);
 		return _node.find_child(key);
 	}
-	if (!_index->count(key))
-		return ryml::ConstNodeRef(_node.tree(), ryml::NONE);
-	return _node.tree()->cref(_index->at(key));
+	if (const auto& keyNodeIdPair = _index->find(key); keyNodeIdPair != _index->end())
+		return _node.tree()->cref(keyNodeIdPair->second);
+	return ryml::ConstNodeRef(_node.tree(), ryml::NONE);
 }
 
 std::vector<YamlNodeReader> YamlNodeReader::children() const
