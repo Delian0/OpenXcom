@@ -326,19 +326,16 @@ void Armor::afterLoad(const Mod* mod)
 			{
 				if (!layerItem.empty())
 				{
-					static char buf[512] = {};
-					static c4::substr ss = buf;
-					size_t len;
-					auto pre = _layersSpecificPrefix.find(layerIndex);
-					if (pre != _layersSpecificPrefix.end())
+					static std::string buf; //static buffer that grows on demand; that's what she said
+					const auto& pre = _layersSpecificPrefix.find(layerIndex);
+					const auto& prefix = pre != _layersSpecificPrefix.end() ? pre->second : _layersDefaultPrefix;
+					size_t formattedLen = c4::format(c4::to_substr(buf), "{}__{}__{}", prefix, layerIndex, layerItem);
+					if (formattedLen > buf.size())
 					{
-						len = c4::format(buf, "{}__{}__{}", pre->second, layerIndex, layerItem);
+						buf.resize(formattedLen);
+						c4::format(c4::to_substr(buf), "{}__{}__{}", prefix, layerIndex, layerItem);
 					}
-					else
-					{
-						len = c4::format(buf, "{}__{}__{}", _layersDefaultPrefix, layerIndex, layerItem);
-					}
-					layerItem.assign(ss.str, len);
+					layerItem.assign(buf.data(), formattedLen);
 					
 					//check if surface is valid
 					if (Options::lazyLoadResources == false)
