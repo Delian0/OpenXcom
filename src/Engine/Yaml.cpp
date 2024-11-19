@@ -53,9 +53,17 @@ C4_NORETURN void YamlErrorHandler::on_error(const char* msg, size_t len, ryml::L
 		loc.name, loc.line, loc.col, ryml::csubstr(msg, len));*/
 	throw Exception(msg); // This function must not return
 }
+static void* s_allocate(size_t len, void* /*hint*/, void* this_)
+{
+	return SDL_malloc(len);
+}
+static void s_free(void* mem, size_t len, void* this_)
+{
+	SDL_free(mem);
+}
 ryml::Callbacks YamlErrorHandler::callbacks()
 {
-	return ryml::Callbacks(this, nullptr, nullptr, YamlErrorHandler::s_error);
+	return ryml::Callbacks(this, s_allocate, s_free, YamlErrorHandler::s_error);
 }
 
 void setGlobalErrorHandler()
