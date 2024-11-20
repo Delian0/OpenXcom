@@ -77,6 +77,8 @@ protected:
 
 public:
 	YamlNodeReader(); // vector demands a default constructor despite it never being used
+	YamlNodeReader(const YamlNodeReader& other);
+	YamlNodeReader(const YamlNodeReader&& other) noexcept;
 	YamlNodeReader(const YamlRootNodeReader* root, const ryml::ConstNodeRef& node);
 	YamlNodeReader(const YamlRootNodeReader* root, const ryml::ConstNodeRef& node, bool useIndex);
 	~YamlNodeReader();
@@ -179,6 +181,9 @@ private:
 	void Parse(ryml::csubstr yaml, std::string fileName, bool withNodeLocations);
 
 public:
+	YamlRootNodeReader();
+	YamlRootNodeReader(const YamlRootNodeReader& other);
+	YamlRootNodeReader(const YamlRootNodeReader&& other) noexcept;
 	YamlRootNodeReader(std::string fullFilePath, bool onlyInfoHeader = false);
 	YamlRootNodeReader(char* data, size_t size, std::string fileNameForError);
 	YamlRootNodeReader(const YamlString& yamlString, std::string description);
@@ -198,6 +203,9 @@ protected:
 	ryml::NodeRef _node;
 
 public:
+	YamlNodeWriter();
+	YamlNodeWriter(YamlNodeWriter& other);
+	YamlNodeWriter(YamlNodeWriter&& other) noexcept;
 	YamlNodeWriter(const YamlRootNodeWriter* root, ryml::NodeRef node);
 
 	/// Converts writer to a reader
@@ -256,6 +264,8 @@ private:
 
 public:
 	YamlRootNodeWriter();
+	YamlRootNodeWriter(YamlRootNodeWriter& other);
+	YamlRootNodeWriter(YamlRootNodeWriter&& other) noexcept;
 	YamlRootNodeWriter(size_t bufferCapacity);
 	~YamlRootNodeWriter();
 

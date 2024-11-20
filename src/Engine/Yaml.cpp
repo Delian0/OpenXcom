@@ -79,6 +79,22 @@ YamlNodeReader::YamlNodeReader()
 {
 }
 
+YamlNodeReader::YamlNodeReader(const YamlNodeReader& other)
+{
+	_invalid = other._invalid;
+	_node = other._node;
+	_root = other._root;
+	_index = nullptr; 
+}
+
+YamlNodeReader::YamlNodeReader(const YamlNodeReader&& other) noexcept
+{
+	_invalid = other._invalid;
+	_node = other._node;
+	_root = other._root;
+	_index = nullptr; // can't move because other is const
+}
+
 YamlNodeReader::YamlNodeReader(const YamlRootNodeReader* root, const ryml::ConstNodeRef& node)
 	: _root(root), _node(node), _invalid(node.invalid()), _index(nullptr)
 {
@@ -245,7 +261,7 @@ YamlNodeReader::operator bool() const
 	return !_invalid;
 }
 
-YamlRootNodeReader::YamlRootNodeReader(std::string fullFilePath, bool onlyInfoHeader) : YamlNodeReader(), _tree(new ryml::Tree()), _parser(nullptr), _eventHandler(nullptr)
+YamlRootNodeReader::YamlRootNodeReader(std::string fullFilePath, bool onlyInfoHeader) : YamlNodeReader(this, ryml::ConstNodeRef(nullptr, ryml::NONE)), _tree(new ryml::Tree()), _parser(nullptr), _eventHandler(nullptr)
 {
 	size_t size;
 	char* data = onlyInfoHeader ? CrossPlatform::getYamlSaveHeaderRaw(fullFilePath, &size) : CrossPlatform::readFileRaw(fullFilePath, &size);
@@ -256,12 +272,27 @@ YamlRootNodeReader::YamlRootNodeReader(std::string fullFilePath, bool onlyInfoHe
 	SDL_free(data);
 }
 
-YamlRootNodeReader::YamlRootNodeReader(char* data, size_t size, std::string fileNameForError) : YamlNodeReader(), _tree(new ryml::Tree()), _parser(nullptr), _eventHandler(nullptr)
+YamlRootNodeReader::YamlRootNodeReader()
+{
+	throw Exception("Don't call YamlRootNodeReader constructor");
+}
+
+YamlRootNodeReader::YamlRootNodeReader(const YamlRootNodeReader& other)
+{
+	throw Exception("Don't call YamlRootNodeReader copy constructor");
+}
+
+YamlRootNodeReader::YamlRootNodeReader(const YamlRootNodeReader&& other) noexcept
+{
+	throw Exception("Don't call YamlRootNodeReader move constructor");
+}
+
+YamlRootNodeReader::YamlRootNodeReader(char* data, size_t size, std::string fileNameForError) : YamlNodeReader(this, ryml::ConstNodeRef(nullptr, ryml::NONE)), _tree(new ryml::Tree()), _parser(nullptr), _eventHandler(nullptr)
 {
 	Parse(ryml::csubstr(data, size), fileNameForError, true);
 }
 
-YamlRootNodeReader::YamlRootNodeReader(const YamlString& yamlString, std::string description) : YamlNodeReader(), _tree(new ryml::Tree()), _parser(nullptr), _eventHandler(nullptr)
+YamlRootNodeReader::YamlRootNodeReader(const YamlString& yamlString, std::string description) : YamlNodeReader(this, ryml::ConstNodeRef(nullptr, ryml::NONE)), _tree(new ryml::Tree()), _parser(nullptr), _eventHandler(nullptr)
 {
 	Parse(ryml::to_csubstr(yamlString.yaml), description, false);
 }
@@ -307,6 +338,23 @@ ryml::Location YamlRootNodeReader::getLocationInFile(const ryml::ConstNodeRef& n
 	}
 	else
 		throw Exception("Parsed yaml without location data logging enabled");
+}
+
+YamlNodeWriter::YamlNodeWriter()
+{
+	throw Exception("Don't call this");
+}
+
+YamlNodeWriter::YamlNodeWriter(YamlNodeWriter& other)
+{
+	_root = other._root;
+	_node = other._node;
+}
+
+YamlNodeWriter::YamlNodeWriter(YamlNodeWriter&& other) noexcept
+{
+	_node = other._node;
+	_root = other._root;
 }
 
 YamlNodeWriter::YamlNodeWriter(const YamlRootNodeWriter* root, ryml::NodeRef node) : _node(node), _root(root)
@@ -382,6 +430,16 @@ YamlString YamlNodeWriter::emit()
 YamlRootNodeWriter::YamlRootNodeWriter() : YamlNodeWriter(this, _node), _tree(new ryml::Tree()), _parser(nullptr), _eventHandler(nullptr)
 {
 	_node = _tree->rootref();
+}
+
+YamlRootNodeWriter::YamlRootNodeWriter(YamlRootNodeWriter& other)
+{
+	throw Exception("Don't call YamlRootNodeWriter copy constructor");
+}
+
+YamlRootNodeWriter::YamlRootNodeWriter(YamlRootNodeWriter&& other) noexcept
+{
+	throw Exception("Don't call YamlRootNodeWriter move constructor");
 }
 
 YamlRootNodeWriter::YamlRootNodeWriter(size_t bufferCapacity) : YamlNodeWriter(this, _node), _tree(new ryml::Tree(0, bufferCapacity)), _parser(nullptr), _eventHandler(nullptr)

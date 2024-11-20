@@ -113,7 +113,7 @@ void MapScript::load(const YAML::YamlNodeReader& r)
 	{
 		_tunnelData = new TunnelData;
 		_tunnelData->level = map["level"].readVal(0);
-		for (const auto mcdReplacement : map["MCDReplacements"].children())
+		for (const auto& mcdReplacement : map["MCDReplacements"].children())
 		{
 			MCDReplacement replacement;
 			std::string type = mcdReplacement["type"].readVal<std::string>("");

@@ -31,6 +31,7 @@
 #include "../Mod/ExtraStrings.h"
 #include "../Savegame/Soldier.h"
 #include "FileMap.h"
+#include <optional>
 
 namespace OpenXcom
 {
@@ -187,17 +188,17 @@ void Language::getList(std::vector<std::string> &ids, std::vector<std::string> &
 void Language::loadFile(const FileMap::FileRecord *frec)
 {
 	const YAML::YamlRootNodeReader& reader = frec->getYAML();
-	YAML::YamlNodeReader langMap;
+	std::optional<YAML::YamlNodeReader> langMap;
 	if (reader[0].isMap())
 	{
-		langMap = reader[0];
+		langMap.emplace(reader[0]);
 	}
 	// Fallback when file is missing language specifier
 	else
 	{
-		langMap = reader.sansRoot();
+		langMap.emplace(reader.sansRoot());
 	}
-	for (const auto& langReader : langMap.children())
+	for (const auto& langReader : langMap->children())
 	{
 		// Regular strings
 		if (langReader.hasVal())
