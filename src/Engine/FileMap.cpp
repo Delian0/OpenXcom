@@ -265,17 +265,16 @@ SDL_RWops *FileRecord::getRWopsReadAll() const
 std::unique_ptr<std::istream> FileRecord::getIStream() const
 {
 	if (zip != NULL) {
-		size_t size;
-		void* data = getUnzippedData(&size);
-		return std::unique_ptr<std::istream>(new StreamData(RawData{data, size, mz_free}));
+		return std::unique_ptr<std::istream>(new StreamData(getUnzippedData()));
 	} else {
 		return CrossPlatform::readFile(fullpath);
 	}
 }
 
-void* FileRecord::getUnzippedData(size_t *pSize) const
+RawData FileRecord::getUnzippedData() const
 {
-	void* data = mz_zip_reader_extract_to_heap((mz_zip_archive*)zip, findex, pSize, 0);
+	size_t size;
+	void* data = mz_zip_reader_extract_to_heap((mz_zip_archive*)zip, findex, &size, 0);
 	if (data == NULL)
 	{
 		auto err = "FileRecord::getIStream(): failed to decompress " + fullpath + ": ";
@@ -283,17 +282,15 @@ void* FileRecord::getUnzippedData(size_t *pSize) const
 		Log(LOG_FATAL) << err;
 		throw Exception(err);
 	}
-	return data;
+	return RawData(data, size, SDL_free);
 }
 
 YAML::YamlRootNodeReader FileRecord::getYAML() const
 {
 	try
 	{
-		size_t size;
-		char* data = zip != NULL ? (char*)getUnzippedData(&size) : CrossPlatform::readFileRaw(fullpath, &size);
-		YAML::YamlRootNodeReader reader(data, size, fullpath);
-		SDL_free(data);
+		RawData data = zip != NULL ? getUnzippedData() : CrossPlatform::readFileRaw(fullpath);
+		YAML::YamlRootNodeReader reader(data, fullpath);
 		return reader;
 	}
 	catch(...)

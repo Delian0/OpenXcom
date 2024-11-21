@@ -1099,10 +1099,9 @@ bool writeFile(const std::string& filename, const std::vector<unsigned char>& da
  * @param filename - what to readFile
  * @return the istream
  */
-std::unique_ptr<std::istream> readFile(const std::string& filename) {
-	size_t size;
-	char* data = readFileRaw(filename, &size);
-	return std::unique_ptr<std::istream>(new StreamData({data, size, SDL_free}));
+std::unique_ptr<std::istream> readFile(const std::string& filename)
+{
+	return std::unique_ptr<std::istream>(new StreamData(readFileRaw(filename)));
 }
 
 /**
@@ -1111,7 +1110,7 @@ std::unique_ptr<std::istream> readFile(const std::string& filename) {
  * @param pSize - returned data size
  * @return pointer to file data
  */
-char* readFileRaw(const std::string& filename, size_t* pSize)
+RawData readFileRaw(const std::string& filename)
 {
 	SDL_RWops* rwops = SDL_RWFromFile(filename.c_str(), "r");
 	if (!rwops)
@@ -1128,8 +1127,7 @@ char* readFileRaw(const std::string& filename, size_t* pSize)
 		Log(LOG_ERROR) << err;
 		throw Exception(err);
 	}
-	*pSize = s;
-	return data;
+	return RawData(data, s, SDL_free);
 }
 
 /**
@@ -1140,9 +1138,7 @@ char* readFileRaw(const std::string& filename, size_t* pSize)
  */
 std::unique_ptr<std::istream> getYamlSaveHeader(const std::string& filename)
 {
-	size_t size;
-	char* data = getYamlSaveHeaderRaw(filename, &size);
-	return std::unique_ptr<std::istream>(new StreamData({data, size, SDL_free}));
+	return std::unique_ptr<std::istream>(new StreamData(getYamlSaveHeaderRaw(filename)));
 }
 
 /**
@@ -1152,7 +1148,7 @@ std::unique_ptr<std::istream> getYamlSaveHeader(const std::string& filename)
  * @param pSize - returned data size
  * @return pointer to file data
  */
-char* getYamlSaveHeaderRaw(const std::string& filename, size_t* pSize)
+RawData getYamlSaveHeaderRaw(const std::string& filename)
 {
 	SDL_RWops* rwops = SDL_RWFromFile(filename.c_str(), "r");
 	if (!rwops)
@@ -1196,8 +1192,7 @@ char* getYamlSaveHeaderRaw(const std::string& filename, size_t* pSize)
 		offs = size;
 	}
 	SDL_RWclose(rwops);
-	*pSize = size;
-	return data;
+	return RawData(data, size, SDL_free);
 }
 
 /**

@@ -24,6 +24,7 @@
 #include <istream>
 #include <unordered_set>
 #include "../Engine/Yaml.h"
+#include "../Engine/CrossPlatform.h"
 #include <SDL_rwops.h>
 #include "ModInfo.h"
 
@@ -50,7 +51,7 @@ namespace FileMap
 		SDL_RWops *getRWopsReadAll() const;
 
 		std::unique_ptr<std::istream> getIStream() const;
-		void* getUnzippedData(size_t* pSize) const;
+		RawData getUnzippedData() const;
 		YAML::YamlRootNodeReader getYAML() const;
 		std::vector<YAML::YamlNodeReader> getAllYAML() const;
 	};

@@ -247,18 +247,16 @@ YamlNodeReader::operator bool() const
 
 YamlRootNodeReader::YamlRootNodeReader(std::string fullFilePath, bool onlyInfoHeader) : YamlNodeReader(), _tree(new ryml::Tree()), _parser(nullptr), _eventHandler(nullptr)
 {
-	size_t size;
-	char* data = onlyInfoHeader ? CrossPlatform::getYamlSaveHeaderRaw(fullFilePath, &size) : CrossPlatform::readFileRaw(fullFilePath, &size);
-	ryml::csubstr str = ryml::csubstr(data, size);
+	RawData data = onlyInfoHeader ? CrossPlatform::getYamlSaveHeaderRaw(fullFilePath) : CrossPlatform::readFileRaw(fullFilePath);
+	ryml::csubstr str = ryml::csubstr((char*)data.data(), data.size());
 	if (onlyInfoHeader)
-		str = ryml::csubstr(data, str.find("---\n"));
+		str = ryml::csubstr((char*)data.data(), str.find("\n---") + 1);
 	Parse(str, fullFilePath, true);
-	SDL_free(data);
 }
 
-YamlRootNodeReader::YamlRootNodeReader(char* data, size_t size, std::string fileNameForError) : YamlNodeReader(), _tree(new ryml::Tree()), _parser(nullptr), _eventHandler(nullptr)
+YamlRootNodeReader::YamlRootNodeReader(const RawData& data, std::string fileNameForError) : YamlNodeReader(), _tree(new ryml::Tree()), _parser(nullptr), _eventHandler(nullptr)
 {
-	Parse(ryml::csubstr(data, size), fileNameForError, true);
+	Parse(ryml::csubstr((char*)data.data(), data.size()), fileNameForError, true);
 }
 
 YamlRootNodeReader::YamlRootNodeReader(const YamlString& yamlString, std::string description) : YamlNodeReader(), _tree(new ryml::Tree()), _parser(nullptr), _eventHandler(nullptr)

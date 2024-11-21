@@ -33,6 +33,7 @@
 #include <unordered_map>
 #include <c4/format.hpp>
 #include <c4/type_name.hpp>
+#include "../Engine/CrossPlatform.h"
 
 //hash function for ryml::csubstr for unordered_map -> just calls the same thing std::hash<std::string> does
 template <>
@@ -180,7 +181,7 @@ private:
 
 public:
 	YamlRootNodeReader(std::string fullFilePath, bool onlyInfoHeader = false);
-	YamlRootNodeReader(char* data, size_t size, std::string fileNameForError);
+	YamlRootNodeReader(const RawData& data, std::string fileNameForError);
 	YamlRootNodeReader(const YamlString& yamlString, std::string description);
 	~YamlRootNodeReader();
 
