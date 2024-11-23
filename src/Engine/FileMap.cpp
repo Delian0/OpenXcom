@@ -282,7 +282,7 @@ RawData FileRecord::getUnzippedData() const
 		Log(LOG_FATAL) << err;
 		throw Exception(err);
 	}
-	return RawData(data, size, SDL_free);
+	return RawData(data, size, mz_free);
 }
 
 YAML::YamlRootNodeReader FileRecord::getYAML() const
