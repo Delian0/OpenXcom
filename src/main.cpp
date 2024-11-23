@@ -97,7 +97,6 @@ int main(int argc, char *argv[])
 	//_CrtSetDbgFlag ( _CRTDBG_ALLOC_MEM_DF | _CRTDBG_LEAK_CHECK_DF );
 
 	SetUnhandledExceptionFilter(crashLogger);
-	YAML::setGlobalErrorHandler();
 #ifdef __MINGW32__
 	// MinGW can use SJLJ or Dwarf exceptions, because of this SEH can't catch it.
 	std::set_terminate(exceptionLogger);
@@ -109,7 +108,7 @@ int main(int argc, char *argv[])
 	std::set_terminate(exceptionLogger);
 #endif
 #endif
-
+	YAML::setGlobalErrorHandler();
 	CrossPlatform::getErrorDialog();
 	CrossPlatform::processArgs(argc, argv);
 	if (!Options::init())
