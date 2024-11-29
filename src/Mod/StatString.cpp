@@ -66,8 +66,10 @@ StatStringCondition *StatString::getCondition(const std::string &conditionName, 
 {
 	// These are the defaults from xcomutil
 	int minValue = 0, maxValue = 255;
-	conditionReader[0].tryReadVal(minValue);
-	conditionReader[1].tryReadVal(maxValue);
+	if (conditionReader[0] && !conditionReader[0].hasNullVal())
+		conditionReader[0].tryReadVal(minValue);
+	if (conditionReader[1] && !conditionReader[1].hasNullVal())
+		conditionReader[1].tryReadVal(maxValue);
 	StatStringCondition *thisCondition = new StatStringCondition(conditionName, minValue, maxValue);
 	return thisCondition;
 }
