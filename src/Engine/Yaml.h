@@ -412,7 +412,10 @@ inline void YamlNodeWriter::setValue(const InputType& inputValue)
 template <typename EnumType>
 typename std::enable_if<std::is_enum<EnumType>::value, bool>::type inline from_chars(ryml::csubstr buf, EnumType* v) noexcept
 {
-	return ryml::atoi(buf, (int*)v);
+	int value = static_cast<int>(*v);
+	bool result = ryml::atoi(buf, &value);
+	*v = static_cast<EnumType>(value);
+	return result;
 }
 
 template <typename EnumType>
