@@ -245,6 +245,12 @@ YamlNodeReader::operator bool() const
 	return !_invalid;
 }
 
+void YamlNodeReader::throwTypeError(const ryml::ConstNodeRef& node, const ryml::cspan<char>& type) const
+{
+	ryml::Location loc = _root->getLocationInFile(node);
+	throw Exception(c4::formatrs<std::string>("{}:{}:{} ERROR: Could not deserialize value to type <{}>!", loc.name, loc.line, loc.col, ryml::csubstr(type.data(), type.size() - (type.back() == 0))));
+}
+
 YamlRootNodeReader::YamlRootNodeReader(std::string fullFilePath, bool onlyInfoHeader) : YamlNodeReader(), _tree(new ryml::Tree()), _parser(nullptr), _eventHandler(nullptr)
 {
 	RawData data = onlyInfoHeader ? CrossPlatform::getYamlSaveHeaderRaw(fullFilePath) : CrossPlatform::readFileRaw(fullFilePath);

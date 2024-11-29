@@ -75,6 +75,8 @@ protected:
 	std::unordered_map<ryml::csubstr, ryml::id_type>* _index;
 
 	ryml::ConstNodeRef getChildNode(const ryml::csubstr& key) const;
+	/// Throws an error when failed to parse a node's value into the expected type
+	void throwTypeError(const ryml::ConstNodeRef& node, const ryml::cspan<char>& type) const;
 
 public:
 	YamlNodeReader(); // vector demands a default constructor despite it never being used
@@ -331,22 +333,23 @@ bool YamlNodeReader::tryRead(ryml::csubstr key, OutputType& outputValue) const
 		const auto& child = _node.find_child(key);
 		if (child.invalid())
 			return false;
+		if (std::is_same_v<std::remove_cv_t<std::remove_reference_t<OutputType> >, std::string> && !child.has_val())
+			throwTypeError(child, "string");
+		if (std::is_integral_v<std::remove_reference_t<OutputType> > && !child.has_val())
+			throwTypeError(child, ryml::type_name<OutputType>());
 		if (!read(child, &outputValue))
-		{
-			ryml::Location loc = _root->getLocationInFile(child);
-			c4::cspan<char> typeName = c4::type_name<OutputType>();
-			throw Exception(c4::formatrs<std::string>("{}:{}:{} ERROR: Could not deserialize value to type <{}>!", loc.name, loc.line, loc.col, ryml::csubstr(typeName.data(), typeName.size())));
-		}
+			throwTypeError(child, ryml::type_name<OutputType>());
 		return true;
 	}
 	if (const auto& keyNodeIdPair = _index->find(key); keyNodeIdPair != _index->end())
 	{
-		if (!read(_node.tree()->cref(keyNodeIdPair->second), &outputValue))
-		{
-			ryml::Location loc = _root->getLocationInFile(_node.tree()->cref(_index->at(key)));
-			c4::cspan<char> typeName = c4::type_name<OutputType>();
-			throw Exception(c4::formatrs<std::string>("{}:{}:{} ERROR: Could not deserialize value to type <{}>!", loc.name, loc.line, loc.col, ryml::csubstr(typeName.data(), typeName.size())));
-		}
+		const auto& child = _node.tree()->cref(keyNodeIdPair->second);
+		if (std::is_same_v<std::remove_cv_t<std::remove_reference_t<OutputType> >, std::string> && !child.has_val())
+			throwTypeError(child, "string");
+		if (std::is_integral_v<std::remove_reference_t<OutputType> > && !child.has_val())
+			throwTypeError(child, ryml::type_name<OutputType>());
+		if (!read(child, &outputValue))
+			throwTypeError(child, ryml::type_name<OutputType>());
 		return true;
 	}
 	return false;
@@ -366,12 +369,12 @@ bool YamlNodeReader::tryReadVal(OutputType& outputValue) const
 {
 	if (_invalid)
 		return false;
+	if (std::is_same_v<std::remove_cv_t<std::remove_reference_t<OutputType> >, std::string> && !_node.has_val())
+		throwTypeError(_node, "string");
+	if (std::is_integral_v<std::remove_reference_t<OutputType> > && !_node.has_val())
+		throwTypeError(_node, ryml::type_name<OutputType>());
 	if (!read(_node, &outputValue))
-	{
-		ryml::Location loc = getLocationInFile();
-		c4::cspan<char> typeName = c4::type_name<OutputType>();
-		throw Exception(c4::formatrs<std::string>("{}:{}:{} ERROR: Could not deserialize value to type <{}>!", loc.name, loc.line, loc.col, ryml::csubstr(typeName.data(), typeName.size())));
-	}
+		throwTypeError(_node, ryml::type_name<OutputType>());
 	return true;
 }
 
