@@ -630,7 +630,7 @@ void BattleUnit::load(const YAML::YamlNodeReader& r, const Mod *mod, const Scrip
 	reader.tryRead("expMana", _exp.mana);
 	reader.tryRead("expMelee", _exp.melee);
 	reader.tryRead("currStats", _stats);
-	reader.tryRead("turrentType", _turretType);
+	reader.tryRead("turretType", _turretType);
 	reader.tryRead("visible", _visible);
 	reader.tryRead("turnsSinceSpotted", _turnsSinceSpotted);
 	reader.tryRead("turnsLeftSpottedForSnipers", _turnsLeftSpottedForSnipers);
