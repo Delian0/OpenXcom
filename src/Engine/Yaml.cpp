@@ -93,7 +93,7 @@ YamlNodeReader::YamlNodeReader(const YamlRootNodeReader* root, const ryml::Const
 	_index = new std::unordered_map<ryml::csubstr, ryml::id_type>();
 	_index->reserve(_node.num_children());
 	for (const ryml::ConstNodeRef& childNode : _node.children())
-		(*_index)[childNode.key()] = childNode.id();
+		(*_index).emplace(childNode.key(), childNode.id());
 }
 
 YamlNodeReader::~YamlNodeReader()
