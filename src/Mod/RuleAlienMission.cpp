@@ -50,9 +50,9 @@ RuleAlienMission::~RuleAlienMission()
  * Loads the mission data from a YAML node.
  * @param node YAML node.
  */
-void RuleAlienMission::load(const YAML::YamlNodeReader& r)
+void RuleAlienMission::load(const YAML::YamlNodeReader& node)
 {
-	const auto& reader = r.useIndex();
+	const auto& reader = node.useIndex();
 	if (const auto& parent = reader["refNode"])
 	{
 		load(parent);

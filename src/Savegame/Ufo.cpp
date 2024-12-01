@@ -106,9 +106,9 @@ Ufo::~Ufo()
  * @param mod The game mod. Use to access the trajectory rules.
  * @param game The game data. Used to find the UFO's mission.
  */
-void Ufo::load(const YAML::YamlNodeReader& r, const ScriptGlobal *shared, const Mod &mod, SavedGame &game)
+void Ufo::load(const YAML::YamlNodeReader& node, const ScriptGlobal *shared, const Mod &mod, SavedGame &game)
 {
-	const auto& reader = r.useIndex();
+	const auto& reader = node.useIndex();
 	MovingTarget::load(reader);
 	reader.tryRead("uniqueId", _uniqueId);
 	reader.tryRead("missionWaveNumber", _missionWaveNumber);
@@ -181,7 +181,7 @@ void Ufo::finishLoading(const YAML::YamlNodeReader& reader, SavedGame &save)
 
 	if (_isHunting)
 	{
-		if (auto& dest = reader["dest"])
+		if (const auto& dest = reader["dest"])
 		{
 			std::string type = dest["type"].readVal<std::string>();
 			int id = dest["id"].readVal<int>();
@@ -209,7 +209,7 @@ void Ufo::finishLoading(const YAML::YamlNodeReader& reader, SavedGame &save)
 	}
 	else if (_isEscorting)
 	{
-		if (auto& dest = reader["dest"])
+		if (const auto& dest = reader["dest"])
 		{
 			std::string type = dest["type"].readVal<std::string>();
 			if (type == "STR_UFO")
@@ -237,7 +237,7 @@ void Ufo::finishLoading(const YAML::YamlNodeReader& reader, SavedGame &save)
 	}
 	//if (_isHunting || _isEscorting)
 	{
-		if (auto& origWaypoint = reader["origWaypoint"])
+		if (const auto& origWaypoint = reader["origWaypoint"])
 		{
 			_origWaypoint = new Waypoint();
 			_origWaypoint->setLongitude(origWaypoint["lon"].readVal<double>());

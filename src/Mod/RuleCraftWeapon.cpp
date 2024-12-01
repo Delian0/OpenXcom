@@ -48,9 +48,9 @@ RuleCraftWeapon::~RuleCraftWeapon()
  * @param node YAML node.
  * @param mod Mod for the craft weapon.
  */
-void RuleCraftWeapon::load(const YAML::YamlNodeReader& r, Mod *mod)
+void RuleCraftWeapon::load(const YAML::YamlNodeReader& node, Mod *mod)
 {
-	const auto& reader = r.useIndex();
+	const auto& reader = node.useIndex();
 	if (const auto& parent = reader["refNode"])
 	{
 		load(parent, mod);

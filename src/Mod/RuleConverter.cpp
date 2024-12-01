@@ -39,9 +39,9 @@ RuleConverter::~RuleConverter()
  * Loads the converter data from a YAML file.
  * @param node YAML node.
  */
-void RuleConverter::load(const YAML::YamlNodeReader& r)
+void RuleConverter::load(const YAML::YamlNodeReader& node)
 {
-	const auto reader = r.useIndex();
+	const auto reader = node.useIndex();
 	reader.tryRead("offsets", _offsets);
 	reader.tryRead("markers", _markers);
 	reader.tryRead("countries", _countries);

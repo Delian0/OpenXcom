@@ -70,9 +70,9 @@ Armor::~Armor()
  * Loads the armor from a YAML file.
  * @param node YAML node.
  */
-void Armor::load(const YAML::YamlNodeReader& r, Mod *mod, const ModScript &parsers)
+void Armor::load(const YAML::YamlNodeReader& node, Mod *mod, const ModScript &parsers)
 {
-	const auto& reader = r.useIndex();
+	const auto& reader = node.useIndex();
 	if (const YAML::YamlNodeReader& parent = reader["refNode"])
 	{
 		load(parent, mod, parsers);

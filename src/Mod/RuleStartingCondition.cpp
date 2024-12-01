@@ -47,9 +47,9 @@ RuleStartingCondition::~RuleStartingCondition()
  * Loads the Starting Conditions from a YAML file.
  * @param node YAML node.
  */
-void RuleStartingCondition::load(const YAML::YamlNodeReader& r, Mod *mod)
+void RuleStartingCondition::load(const YAML::YamlNodeReader& node, Mod *mod)
 {
-	const auto& reader = r.useIndex();
+	const auto& reader = node.useIndex();
 	if (const auto& parent = reader["refNode"])
 	{
 		load(parent, mod);

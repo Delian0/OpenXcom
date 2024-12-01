@@ -59,9 +59,9 @@ SoldierDiary::~SoldierDiary()
  * Loads the diary from a YAML file.
  * @param node YAML node.
  */
-void SoldierDiary::load(const YAML::YamlNodeReader& r, const Mod *mod)
+void SoldierDiary::load(const YAML::YamlNodeReader& node, const Mod *mod)
 {
-	const auto& reader = r.useIndex();
+	const auto& reader = node.useIndex();
 	for (const auto& commendation : reader["commendations"].children())
 	{
 		SoldierCommendations* sc = new SoldierCommendations(commendation, mod);
@@ -124,11 +124,11 @@ void SoldierDiary::save(YAML::YamlNodeWriter writer) const
 {
 	writer.setAsMap();
 	writer.write("commendations", _commendations,
-				 [](YAML::YamlNodeWriter w, SoldierCommendations* c)
-				 { c->save(w.write()); });
+		[](YAML::YamlNodeWriter& w, SoldierCommendations* c)
+		{ c->save(w.write()); });
 	writer.write("killList", _killList,
-				[](YAML::YamlNodeWriter w, BattleUnitKills* b)
-				{ b->save(w.write()); });
+		[](YAML::YamlNodeWriter& w, BattleUnitKills* b)
+		{ b->save(w.write()); });
 	if (!_missionIdList.empty())
 		writer.write("missionIdList", _missionIdList).setFlowStyle();
 	if (_daysWoundedTotal) writer.write("daysWoundedTotal", _daysWoundedTotal);

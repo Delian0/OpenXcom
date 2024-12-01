@@ -4074,8 +4074,8 @@ void ScriptParserEventsBase::load(const YAML::YamlNodeReader& scripts)
 
 	auto getNode = [&](const YAML::YamlNodeReader& i, const std::string& nodeName)
 	{
-		const auto& n = i[ryml::to_csubstr(nodeName)];
-		return std::make_tuple(nodeName, n, !!n);
+		auto n = i[ryml::to_csubstr(nodeName)];
+		return std::make_tuple(nodeName, std::move(n), !!n);
 	};
 	auto haveNode = [&](const std::tuple<std::string, YAML::YamlNodeReader, bool>& nn)
 	{
@@ -4601,18 +4601,18 @@ void ScriptGlobal::load(const YAML::YamlNodeReader& reader)
 							Log(LOG_ERROR) << "Script variable '" + name + "' already used in '" + _tagNames[ref->type].name.toString() + "'.";
 							continue;
 						}
-						auto tag = getTag(p.first, ScriptRef::tempFrom(namePrefix));
-						if (tag)
+						auto tagOffset = getTag(p.first, ScriptRef::tempFrom(namePrefix));
+						if (tagOffset)
 						{
-							auto data = getTagValueData(p.first, tag);
+							auto data = getTagValueData(p.first, tagOffset);
 							if (valueType != data.valueType)
 							{
 								Log(LOG_ERROR) << "Script variable '" + name + "' have wrong type '" << _tagValueTypes[valueType].name.toString() << "' instead of '" << _tagValueTypes[data.valueType].name.toString() << "' in '" + nodeName + "'.";
 							}
 							continue;
 						}
-						tag = addTag(p.first, addNameRef(namePrefix), valueType);
-						if (!tag)
+						tagOffset = addTag(p.first, addNameRef(namePrefix), valueType);
+						if (!tagOffset)
 						{
 							Log(LOG_ERROR) << "Script variable '" + name + "' exceeds limit of " << (int)p.second.limit << " available variables in '" + nodeName + "'.";
 							continue;

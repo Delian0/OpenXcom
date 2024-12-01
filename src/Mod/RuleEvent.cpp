@@ -23,7 +23,7 @@ namespace OpenXcom
 
 RuleEvent::RuleEvent(const std::string &name) :
 	_name(name), _background("BACK13.SCR"), _alignBottom(false),
-	_city(false), _points(0), _funds(0), _spawnedPersons(0), _timer(30), _timerRandom(0), _invert(false), _spawnedSoldier("")
+	_city(false), _points(0), _funds(0), _spawnedPersons(0), _timer(30), _timerRandom(0), _invert(false)
 {
 }
 
@@ -31,9 +31,9 @@ RuleEvent::RuleEvent(const std::string &name) :
  * Loads the event definition from YAML.
  * @param node YAML node.
  */
-void RuleEvent::load(const YAML::YamlNodeReader& r)
+void RuleEvent::load(const YAML::YamlNodeReader& node)
 {
-	const auto& reader = r.useIndex();
+	const auto& reader = node.useIndex();
 	if (const auto& parent = reader["refNode"])
 	{
 		load(parent);

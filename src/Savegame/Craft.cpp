@@ -115,9 +115,9 @@ Craft::~Craft()
  * @param mod Mod for the saved game.
  * @param save Pointer to the saved game.
  */
-void Craft::load(const YAML::YamlNodeReader& r, const ScriptGlobal *shared, const Mod *mod, SavedGame *save)
+void Craft::load(const YAML::YamlNodeReader& node, const ScriptGlobal *shared, const Mod *mod, SavedGame *save)
 {
-	const auto& reader = r.useIndex();
+	const auto& reader = node.useIndex();
 	MovingTarget::load(reader);
 
 	reader.tryRead("fuel", _fuel);
@@ -347,19 +347,19 @@ void Craft::save(YAML::YamlNodeWriter writer, const ScriptGlobal *shared) const
 	writer.write("damage", _damage);
 	writer.write("shield", _shield);
 	writer.write("weapons", _weapons,
-				 [](YAML::YamlNodeWriter vectorWriter, CraftWeapon* w)
-				 {
-					 auto cwWriter = vectorWriter.write();
-					 cwWriter.setAsMap();
-					 if (w)
-						 w->save(cwWriter);
-					 else
-						 cwWriter.write("type", "0");
-				 });
+		[](YAML::YamlNodeWriter& vectorWriter, CraftWeapon* w)
+		{
+			auto cwWriter = vectorWriter.write();
+			cwWriter.setAsMap();
+			if (w)
+				w->save(cwWriter);
+			else
+				cwWriter.write("type", "0");
+		});
 	_items->save(writer["items"]);
 	writer.write("vehicles", _vehicles,
-				 [](YAML::YamlNodeWriter vectorWriter, Vehicle* v)
-				 { v->save(vectorWriter.write()); });
+		[](YAML::YamlNodeWriter& vectorWriter, Vehicle* v)
+		{ v->save(vectorWriter.write()); });
 	writer.write("status", _status);
 	if (_lowFuel)
 		writer.write("lowFuel", _lowFuel);

@@ -56,9 +56,9 @@ RuleUfo::~RuleUfo()
  * @param node YAML node.
  * @param mod Mod for the UFO.
  */
-void RuleUfo::load(const YAML::YamlNodeReader& r, Mod *mod, const ModScript &parsers)
+void RuleUfo::load(const YAML::YamlNodeReader& node, Mod *mod, const ModScript &parsers)
 {
-	const auto& reader = r.useIndex();
+	const auto& reader = node.useIndex();
 	if (const auto& parent = reader["refNode"])
 	{
 		load(parent, mod, parsers);

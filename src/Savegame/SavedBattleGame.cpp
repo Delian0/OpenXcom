@@ -132,9 +132,9 @@ SavedBattleGame::~SavedBattleGame()
  * @param mod for the saved game.
  * @param savedGame Pointer to saved game.
  */
-void SavedBattleGame::load(const YAML::YamlNodeReader& r, Mod *mod, SavedGame* savedGame)
+void SavedBattleGame::load(const YAML::YamlNodeReader& node, Mod *mod, SavedGame* savedGame)
 {
-	const auto& reader = r.useIndex();
+	const auto& reader = node.useIndex();
 	int mapsize_x = reader["width"].readVal(_mapsize_x);
 	int mapsize_y = reader["length"].readVal(_mapsize_y);
 	int mapsize_z = reader["height"].readVal(_mapsize_z);
@@ -192,7 +192,7 @@ void SavedBattleGame::load(const YAML::YamlNodeReader& r, Mod *mod, SavedGame* s
 			getTile(pos)->load(tile);
 		}
 	}
-	else 
+	else
 	{
 		// load key to how the tile data was saved
 		Tile::SerializationKey serKey;
@@ -210,15 +210,15 @@ void SavedBattleGame::load(const YAML::YamlNodeReader& r, Mod *mod, SavedGame* s
 		// load binary tile data!
 		std::vector<char> binTiles = reader["binTiles"].readValBase64();
 
-		Uint8* r = (Uint8*)binTiles.data();
-		Uint8* dataEnd = r + totalTiles * serKey.totalBytes;
+		Uint8* ptr = (Uint8*)binTiles.data();
+		Uint8* dataEnd = ptr + totalTiles * serKey.totalBytes;
 
-		while (r < dataEnd)
+		while (ptr < dataEnd)
 		{
-			int index = unserializeInt(&r, serKey.index);
+			int index = unserializeInt(&ptr, serKey.index);
 			assert(index >= 0 && index < _mapsize_x * _mapsize_z * _mapsize_y);
-			_tiles[index].loadBinary(r, serKey); // loadBinary's privileges to advance *r have been revoked
-			r += serKey.totalBytes - serKey.index; // r is now incremented strictly by totalBytes in case there are obsolete fields present in the data
+			_tiles[index].loadBinary(ptr, serKey); // loadBinary's privileges to advance *r have been revoked
+			ptr += serKey.totalBytes - serKey.index; // r is now incremented strictly by totalBytes in case there are obsolete fields present in the data
 		}
 	}
 
@@ -231,10 +231,10 @@ void SavedBattleGame::load(const YAML::YamlNodeReader& r, Mod *mod, SavedGame* s
 			calculateModuleMap();
 		}
 	}
-	for (const auto& node : reader["nodes"].children())
+	for (const auto& nodeConfig : reader["nodes"].children())
 	{
 		Node *n = new Node();
-		n->load(node);
+		n->load(nodeConfig);
 		_nodes.push_back(n);
 	}
 
@@ -249,9 +249,9 @@ void SavedBattleGame::load(const YAML::YamlNodeReader& r, Mod *mod, SavedGame* s
 	unitIndex.reserve(_units.capacity());
 	itemIndex.reserve(_items.capacity() + _recoverConditional.capacity() + _recoverGuaranteed.capacity());
 
-	auto findUnitById = [&](const YAML::YamlNodeReader& reader) -> BattleUnit*
+	auto findUnitById = [&](const YAML::YamlNodeReader& r) -> BattleUnit*
 	{
-		int id = reader.readVal(-1);
+		int id = r.readVal(-1);
 		if (id == -1 || !unitIndex.count(id))
 			return nullptr;
 		return unitIndex.at(id);
@@ -364,7 +364,7 @@ void SavedBattleGame::load(const YAML::YamlNodeReader& r, Mod *mod, SavedGame* s
 				continue;
 			BattleItem* item = itemIndex.at(itemReader["id"].readVal<int>());
 			// if "ammoItemSlots" node exists, then link ammo items for all slots, else try the backwards-compatibility node
-			if (const auto& slotsReader = itemReader["ammoItemSlots"]) 
+			if (const auto& slotsReader = itemReader["ammoItemSlots"])
 				for (size_t slotIndex = 0; slotIndex < RuleItem::AmmoSlotMax; slotIndex++)
 				{
 					int itemId = slotsReader[slotIndex].readVal(-1);
@@ -536,7 +536,7 @@ void SavedBattleGame::save(YAML::YamlNodeWriter writer) const
 	writer.write("selectedUnit", (_selectedUnit ? _selectedUnit->getId() : -1));
 
 	writer.write("mapdatasets", _mapDataSets,
-		[](YAML::YamlNodeWriter w, MapDataSet* mds)
+		[](YAML::YamlNodeWriter& w, MapDataSet* mds)
 		{ w.write(mds->getName()); });
 #if 0
 	for (int i = 0; i < _mapsize_z * _mapsize_y * _mapsize_x; ++i)
@@ -558,14 +558,14 @@ void SavedBattleGame::save(YAML::YamlNodeWriter writer) const
 
 	size_t tileDataSize = Tile::serializationKey.totalBytes * _mapsize_z * _mapsize_y * _mapsize_x;
 	Uint8* tileData = (Uint8*) calloc(tileDataSize, 1);
-	Uint8* w = tileData;
+	Uint8* ptr = tileData;
 
 	for (int i = 0; i < _mapsize_z * _mapsize_y * _mapsize_x; ++i)
 	{
 		if (!_tiles[i].isVoid())
 		{
-			serializeInt(&w, Tile::serializationKey.index, i);
-			_tiles[i].saveBinary(&w);
+			serializeInt(&ptr, Tile::serializationKey.index, i);
+			_tiles[i].saveBinary(&ptr);
 		}
 		else
 		{
@@ -578,19 +578,19 @@ void SavedBattleGame::save(YAML::YamlNodeWriter writer) const
 #endif
 
 	writer.write("nodes", _nodes,
-				 [](YAML::YamlNodeWriter w, Node* n)
-				 { n->save(w.write()); });
+		[](YAML::YamlNodeWriter& w, Node* n)
+		{ n->save(w.write()); });
 	if (_missionType == "STR_BASE_DEFENSE")
 		writer.write("moduleMap", _baseModules);
 	writer.write("units", _units,
-				 [&](YAML::YamlNodeWriter w, BattleUnit* bu)
-				 { bu->save(w.write(), this->getMod()->getScriptGlobal()); });
+		[&](YAML::YamlNodeWriter& w, BattleUnit* bu)
+		{ bu->save(w.write(), this->getMod()->getScriptGlobal()); });
 	writer.write("items", _items,
-				 [&](YAML::YamlNodeWriter w, BattleItem* bi)
-				 { if (!bi->isSpecialWeapon()) bi->save(w.write(), this->getMod()->getScriptGlobal()); });
+		[&](YAML::YamlNodeWriter& w, BattleItem* bi)
+		{ if (!bi->isSpecialWeapon()) bi->save(w.write(), this->getMod()->getScriptGlobal()); });
 	writer.write("itemsSpecial", _items,
-				 [&](YAML::YamlNodeWriter w, BattleItem* bi)
-				 { if (bi->isSpecialWeapon()) bi->save(w.write(), this->getMod()->getScriptGlobal()); });
+		[&](YAML::YamlNodeWriter& w, BattleItem* bi)
+		{ if (bi->isSpecialWeapon()) bi->save(w.write(), this->getMod()->getScriptGlobal()); });
 	writer.write("tuReserved", (int)_tuReserved);
 	writer.write("kneelReserved", _kneelReserved);
 	writer.write("depth", _depth);
@@ -601,11 +601,11 @@ void SavedBattleGame::save(YAML::YamlNodeWriter writer) const
 	writer.write("maxAmbienceRandomDelay", _maxAmbienceRandomDelay);
 	writer.write("currentAmbienceDelay", _currentAmbienceDelay);
 	writer.write("recoverGuaranteed", _recoverGuaranteed,
-				 [&](YAML::YamlNodeWriter w, BattleItem* bi)
-				 { bi->save(w.write(), this->getMod()->getScriptGlobal()); });
+		[&](YAML::YamlNodeWriter& w, BattleItem* bi)
+		{ bi->save(w.write(), this->getMod()->getScriptGlobal()); });
 	writer.write("recoverConditional", _recoverConditional,
-				 [&](YAML::YamlNodeWriter w, BattleItem* bi)
-				 { bi->save(w.write(), this->getMod()->getScriptGlobal()); });
+		[&](YAML::YamlNodeWriter& w, BattleItem* bi)
+		{ bi->save(w.write(), this->getMod()->getScriptGlobal()); });
 	writer.write("music", _music);
 	_baseItems->save(writer["baseItems"]);
 	writer.write("turnLimit", _turnLimit);

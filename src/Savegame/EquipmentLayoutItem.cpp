@@ -197,7 +197,7 @@ void EquipmentLayoutItem::save(YAML::YamlNodeWriter writer) const
 		{
 			if (!ammoSlotWriter.has_value())
 			{
-				ammoSlotWriter = writer["ammoItemSlots"];
+				ammoSlotWriter.emplace(writer["ammoItemSlots"]);
 				ammoSlotWriter->setAsSeq();
 			}
 			ammoSlotWriter->write(s ? s->getType() : EmptyPlaceHolder);

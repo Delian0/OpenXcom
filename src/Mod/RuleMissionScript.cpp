@@ -60,9 +60,9 @@ RuleMissionScript::~RuleMissionScript()
  * Loads a missionScript from a YML file.
  * @param node the node within the file we're reading.
  */
-void RuleMissionScript::load(const YAML::YamlNodeReader& r)
+void RuleMissionScript::load(const YAML::YamlNodeReader& node)
 {
-	const auto& reader = r.useIndex();
+	const auto& reader = node.useIndex();
 	if (const auto& parent = reader["refNode"])
 	{
 		load(parent);

@@ -319,9 +319,9 @@ void RuleItem::updateCategories(std::map<std::string, std::string> *replacementR
  * @param mod Mod for the item.
  * @param listOrder The list weight for this item.
  */
-void RuleItem::load(const YAML::YamlNodeReader& r, Mod *mod, const ModScript& parsers)
+void RuleItem::load(const YAML::YamlNodeReader& node, Mod *mod, const ModScript& parsers)
 {
-	const auto& reader = r.useIndex();
+	const auto& reader = node.useIndex();
 	if (const auto& parent = reader["refNode"])
 	{
 		load(parent, mod, parsers);

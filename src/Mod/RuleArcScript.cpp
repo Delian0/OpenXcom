@@ -44,9 +44,9 @@ RuleArcScript::~RuleArcScript()
  * Loads an arcScript from a YML file.
  * @param node the node within the file we're reading.
  */
-void RuleArcScript::load(const YAML::YamlNodeReader& r)
+void RuleArcScript::load(const YAML::YamlNodeReader& node)
 {
-	const auto& reader = r.useIndex();
+	const auto& reader = node.useIndex();
 	if (const auto& parent = reader["refNode"])
 	{
 		load(parent);

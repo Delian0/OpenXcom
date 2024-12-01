@@ -359,28 +359,28 @@ void Base::save(YAML::YamlNodeWriter writer) const
 	writer.setAsMap();
 	Target::save(writer);
 	writer.write("facilities", _facilities,
-				 [](YAML::YamlNodeWriter vectorWriter, BaseFacility* f)
-				 { f->save(vectorWriter.write()); });
+		[](YAML::YamlNodeWriter& vectorWriter, BaseFacility* f)
+		{ f->save(vectorWriter.write()); });
 	writer.write("soldiers", _soldiers,
-				 [&](YAML::YamlNodeWriter vectorWriter, Soldier* s)
-				 { s->save(vectorWriter.write(), _mod->getScriptGlobal()); });
+		[&](YAML::YamlNodeWriter& vectorWriter, Soldier* s)
+		{ s->save(vectorWriter.write(), _mod->getScriptGlobal()); });
 	writer.write("crafts", _crafts,
-				 [&](YAML::YamlNodeWriter vectorWriter, Craft* c)
-				 { c->save(vectorWriter.write(), _mod->getScriptGlobal()); });
+		[&](YAML::YamlNodeWriter& vectorWriter, Craft* c)
+		{ c->save(vectorWriter.write(), _mod->getScriptGlobal()); });
 	_items->save(writer["items"]);
 	writer.write("scientists", _scientists);
 	writer.write("engineers", _engineers);
 	if (_inBattlescape)
 		writer.write("inBattlescape", _inBattlescape);
 	writer.write("transfers", _transfers,
-				 [&](YAML::YamlNodeWriter vectorWriter, Transfer* t)
-				 { t->save(vectorWriter.write(), this, _mod); });
+		[&](YAML::YamlNodeWriter& vectorWriter, Transfer* t)
+		{ t->save(vectorWriter.write(), this, _mod); });
 	writer.write("research", _research,
-				 [](YAML::YamlNodeWriter vectorWriter, ResearchProject* r)
-				 { r->save(vectorWriter.write()); });
+		[](YAML::YamlNodeWriter& vectorWriter, ResearchProject* r)
+		{ r->save(vectorWriter.write()); });
 	writer.write("productions", _productions,
-				 [](YAML::YamlNodeWriter vectorWriter, Production* p)
-				 { p->save(vectorWriter.write()); });
+		[](YAML::YamlNodeWriter& vectorWriter, Production* p)
+		{ p->save(vectorWriter.write()); });
 	if (_retaliationTarget)
 		writer.write("retaliationTarget", _retaliationTarget);
 	if (_retaliationMission)

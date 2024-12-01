@@ -595,9 +595,9 @@ BattleUnit::~BattleUnit()
  * Loads the unit from a YAML file.
  * @param node YAML node.
  */
-void BattleUnit::load(const YAML::YamlNodeReader& r, const Mod *mod, const ScriptGlobal *shared)
+void BattleUnit::load(const YAML::YamlNodeReader& node, const Mod *mod, const ScriptGlobal *shared)
 {
-	const auto& reader = r.useIndex();
+	const auto& reader = node.useIndex();
 	reader.tryRead("id", _id);
 	reader.tryRead("faction", _faction);
 	reader.tryRead("status", _status);
@@ -641,7 +641,7 @@ void BattleUnit::load(const YAML::YamlNodeReader& r, const Mod *mod, const Scrip
 	reader.tryRead("kills", _kills);
 	reader.tryRead("dontReselect", _dontReselect);
 	_charging = 0;
-	if (_spawnUnit = mod->getUnit(reader["spawnUnit"].readVal<std::string>(""), false)) // ignore bugged types
+	if ((_spawnUnit = mod->getUnit(reader["spawnUnit"].readVal<std::string>(""), false))) // ignore bugged types
 	{
 		reader.tryRead("respawn", _respawn);
 		reader.tryRead("spawnUnitFaction", _spawnUnitFaction);
@@ -661,7 +661,7 @@ void BattleUnit::load(const YAML::YamlNodeReader& r, const Mod *mod, const Scrip
 	reader.tryRead("murdererWeapon", _murdererWeapon);
 	reader.tryRead("murdererWeaponAmmo", _murdererWeaponAmmo);
 
-	if (auto& recolor = reader["recolor"])
+	if (const auto& recolor = reader["recolor"])
 	{
 		_recolor.clear();
 		for (size_t i = 0; i < recolor.childrenCount(); ++i)
@@ -673,7 +673,7 @@ void BattleUnit::load(const YAML::YamlNodeReader& r, const Mod *mod, const Scrip
 	reader.tryRead("pickUpWeaponsMoreActively", _pickUpWeaponsMoreActively);
 	reader.tryRead("disableIndicators", _disableIndicators);
 	reader.tryRead("movementType", _movementType);
-	if (auto& moveCost = reader["moveCost"])
+	if (const auto& moveCost = reader["moveCost"])
 	{
 		_moveCostBase.load(moveCost["basePercent"]);
 		_moveCostBaseFly.load(moveCost["baseFlyPercent"]);
@@ -785,14 +785,14 @@ void BattleUnit::save(YAML::YamlNodeWriter writer, const ScriptGlobal *shared) c
 	if (!_murdererWeaponAmmo.empty())
 		writer.write("murdererWeaponAmmo", _murdererWeaponAmmo);
 	writer.write("recolor", _recolor,
-				 [](YAML::YamlNodeWriter vectorWriter, std::pair<Uint8, Uint8> pair)
-				 {
-					 auto pairWriter = vectorWriter.write();
-					 pairWriter.setAsSeq();
-					 pairWriter.setFlowStyle();
-					 pairWriter.write(pair.first);
-					 pairWriter.write(pair.second);
-				 });
+		[](YAML::YamlNodeWriter& vectorWriter, std::pair<Uint8, Uint8> pair)
+		{
+			auto pairWriter = vectorWriter.write();
+			pairWriter.setAsSeq();
+			pairWriter.setFlowStyle();
+			pairWriter.write(pair.first);
+			pairWriter.write(pair.second);
+		});
 	if (_mindControllerID)
 		writer.write("mindControllerID", _mindControllerID);
 	if (_summonedPlayerUnit)

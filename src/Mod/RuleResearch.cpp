@@ -34,9 +34,9 @@ RuleResearch::RuleResearch(const std::string &name, int listOrder) : _name(name)
  * @param node YAML node.
  * @param listOrder The list weight for this research.
  */
-void RuleResearch::load(const YAML::YamlNodeReader& r, Mod* mod, const ModScript& parsers)
+void RuleResearch::load(const YAML::YamlNodeReader& node, Mod* mod, const ModScript& parsers)
 {
-	const auto& reader = r.useIndex();
+	const auto& reader = node.useIndex();
 	if (const auto& parent = reader["refNode"])
 	{
 		load(parent, mod, parsers);

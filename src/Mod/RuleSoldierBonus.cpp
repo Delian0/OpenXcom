@@ -34,9 +34,9 @@ RuleSoldierBonus::RuleSoldierBonus(const std::string &name, int listOrder) : _na
  * Loads the soldier bonus definition from YAML.
  * @param node YAML node.
  */
-void RuleSoldierBonus::load(const YAML::YamlNodeReader& r, Mod* mod, const ModScript &parsers)
+void RuleSoldierBonus::load(const YAML::YamlNodeReader& node, Mod* mod, const ModScript &parsers)
 {
-	const auto& reader = r.useIndex();
+	const auto& reader = node.useIndex();
 	if (const auto& parent = reader["refNode"])
 	{
 		load(parent, mod, parsers);

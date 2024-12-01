@@ -593,7 +593,7 @@ void SavedGame::load(const std::string &filename, Mod *mod, Language *lang)
 	}
 
 	// Finish loading crafts after bases (more specifically after all crafts) are loaded, because of references between crafts (i.e. friendly escorts)
-	for (int i = 0; i < _bases.size(); ++i)
+	for (size_t i = 0; i < _bases.size(); ++i)
 		_bases[i]->finishLoading(reader["bases"][i], this);
 
 	// Finish loading UFOs after all craft and all other UFOs are loaded
@@ -729,7 +729,7 @@ void SavedGame::save(const std::string &filename, Mod *mod) const
 	YAML::YamlRootNodeWriter headerWriter;
 	headerWriter.setAsMap();
 	// Saves the brief game info used in the saves list
-	
+
 	headerWriter.write("name", _name);
 	headerWriter.write("version", OPENXCOM_VERSION_SHORT);
 	headerWriter.write("engine", OPENXCOM_VERSION_ENGINE);
@@ -826,8 +826,8 @@ void SavedGame::save(const std::string &filename, Mod *mod) const
 		}
 	}
 	writer.write("poppedResearch", _poppedResearch,
-				 [](YAML::YamlNodeWriter w, const RuleResearch* r)
-				 { w.write(r->getName()); });
+		[](YAML::YamlNodeWriter& w, const RuleResearch* r)
+		{ w.write(r->getName()); });
 	writer.write("generatedEvents", _generatedEvents);
 	writer.write("ufopediaRuleStatus", _ufopediaRuleStatus);
 	writer.write("manufactureRuleStatus", _manufactureRuleStatus);

@@ -143,9 +143,9 @@ Soldier::~Soldier()
  * @param mod Game mod.
  * @param save Pointer to savegame.
  */
-void Soldier::load(const YAML::YamlNodeReader& r, const Mod *mod, SavedGame *save, const ScriptGlobal *shared, bool soldierTemplate)
+void Soldier::load(const YAML::YamlNodeReader& node, const Mod *mod, SavedGame *save, const ScriptGlobal *shared, bool soldierTemplate)
 {
-	const auto& reader = r.useIndex();
+	const auto& reader = node.useIndex();
 
 	if (!soldierTemplate)
 		reader.tryRead("id", _id);
@@ -319,11 +319,11 @@ void Soldier::save(YAML::YamlNodeWriter writer, const ScriptGlobal *shared) cons
 	writer.write("improvement", _improvement);
 	writer.write("psiStrImprovement", _psiStrImprovement);
 	writer.write("equipmentLayout", _equipmentLayout,
-				 [](YAML::YamlNodeWriter w, EquipmentLayoutItem* i)
-				 { i->save(w.write()); });
+		[](YAML::YamlNodeWriter& w, EquipmentLayoutItem* i)
+		{ i->save(w.write()); });
 	writer.write("personalEquipmentLayout", _personalEquipmentLayout,
-				 [](YAML::YamlNodeWriter w, EquipmentLayoutItem* i)
-				 { i->save(w.write()); });
+		[](YAML::YamlNodeWriter& w, EquipmentLayoutItem* i)
+		{ i->save(w.write()); });
 	if (_personalEquipmentArmor)
 		writer.write("personalEquipmentArmor", _personalEquipmentArmor->getType());
 	if (_death != 0)

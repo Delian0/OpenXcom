@@ -176,7 +176,7 @@ void BattleItem::save(YAML::YamlNodeWriter writer, const ScriptGlobal *shared) c
 		{
 			if (!ammoSlotWriter.has_value())
 			{
-				ammoSlotWriter = writer["ammoItemSlots"];
+				ammoSlotWriter.emplace(writer["ammoItemSlots"]);
 				ammoSlotWriter->setAsSeq();
 				ammoSlotWriter->setFlowStyle();
 			}

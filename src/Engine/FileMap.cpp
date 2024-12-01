@@ -290,8 +290,7 @@ YAML::YamlRootNodeReader FileRecord::getYAML() const
 	try
 	{
 		RawData data = zip != NULL ? getUnzippedData() : CrossPlatform::readFileRaw(fullpath);
-		YAML::YamlRootNodeReader reader(data, fullpath);
-		return reader;
+		return YAML::YamlRootNodeReader(data, fullpath);
 	}
 	catch(...)
 	{

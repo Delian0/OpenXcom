@@ -154,9 +154,9 @@ bool RuleDamageType::isDirect() const
  * Load rule from YAML.
  * @param node Node with data.
  */
-void RuleDamageType::load(const YAML::YamlNodeReader& r)
+void RuleDamageType::load(const YAML::YamlNodeReader& node)
 {
-	const auto& reader = r.useIndex();
+	const auto& reader = node.useIndex();
 	reader.tryRead("FixRadius", FixRadius);
 	reader.tryRead("RandomType", RandomType);
 	reader.tryRead("ResistType", ResistType);

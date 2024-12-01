@@ -51,9 +51,9 @@ MapScript::~MapScript()
  * Loads a map script command from YAML.
  * @param node the YAML node from which to read.
  */
-void MapScript::load(const YAML::YamlNodeReader& r)
+void MapScript::load(const YAML::YamlNodeReader& node)
 {
-	const auto& reader = r.useIndex();
+	const auto& reader = node.useIndex();
 	std::string command;
 	if (const auto& map = reader["type"])
 	{

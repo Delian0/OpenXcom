@@ -355,9 +355,9 @@ struct BattleUnitStatistics
 	}
 
 	/// Load function
-	void load(const YAML::YamlNodeReader& r)
+	void load(const YAML::YamlNodeReader& node)
 	{
-		const auto& reader = r.useIndex();
+		const auto& reader = node.useIndex();
 		reader.tryRead("wasUnconcious", wasUnconcious);
 		for (const auto& kill : reader["kills"].children())
 			kills.push_back(new BattleUnitKills(kill));
@@ -389,8 +389,8 @@ struct BattleUnitStatistics
 		writer.setAsMap();
 		if (wasUnconcious) writer.write("wasUnconcious", wasUnconcious);
 		writer.write("kills", kills,
-					 [](YAML::YamlNodeWriter w, BattleUnitKills* k)
-					 { k->save(w.write()); });
+			[](YAML::YamlNodeWriter& w, BattleUnitKills* k)
+			{ k->save(w.write()); });
 		if (shotAtCounter) writer.write("shotAtCounter", shotAtCounter);
 		if (hitCounter) writer.write("hitCounter", hitCounter);
 		if (shotByFriendlyCounter) writer.write("shotByFriendlyCounter", shotByFriendlyCounter);

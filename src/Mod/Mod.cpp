@@ -442,8 +442,7 @@ Mod::Mod() :
 	_baseDefenseMapFromLocation(0), _disableUnderwaterSounds(false), _enableUnitResponseSounds(false), _pediaReplaceCraftFuelWithRangeType(-1),
 	_facilityListOrder(0), _craftListOrder(0), _itemCategoryListOrder(0), _itemListOrder(0), _armorListOrder(0), _alienRaceListOrder(0),
 	_researchListOrder(0),  _manufactureListOrder(0), _soldierBonusListOrder(0), _transformationListOrder(0), _ufopaediaListOrder(0), _invListOrder(0), _soldierListOrder(0),
-	_modCurrent(0), _statePalette(0),
-	_startingBaseBeginner(""), _startingBaseDefault(""), _startingBaseExperienced(""), _startingBaseVeteran(""), _startingBaseGenius(""), _startingBaseSuperhuman("")
+	_modCurrent(0), _statePalette(0)
 {
 	_muteMusic = new Music();
 	_muteSound = new Sound();
@@ -4855,7 +4854,7 @@ void sortIndex(std::vector<std::string>& index, std::map<std::string, RuleType*>
 	for (const auto& pair : map)
 		tempVector.push_back(&pair);
 	std::sort(tempVector.begin(), tempVector.end(), comparator);
-	for (int i = 0; i < index.size(); ++i)
+	for (size_t i = 0; i < index.size(); ++i)
 		index[i].assign(tempVector[i]->first);
 }
 

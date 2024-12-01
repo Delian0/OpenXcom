@@ -23,13 +23,26 @@
 #define _C4_YML_STD_MAP_HPP_
 #define _C4_YML_STD_VECTOR_HPP_
 
+#ifdef _MSC_VER
 #pragma warning(push)
 #pragma warning(disable : 4668 6011 6255 6293 6386 26439 26495 26498 26819)
+#elif defined(__GNUC__)
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wredundant-decls"
+#endif
+
 #include "../../libs/rapidyaml/ryml.hpp"
 #include "../../libs/rapidyaml/ryml_std.hpp"
+
+#ifdef _MSC_VER
 #pragma warning(pop)
+#elif defined(__GNUC__)
+#pragma GCC diagnostic pop
+#endif
+
 #include <map>
 #include <vector>
+#include <memory>
 #include <unordered_map>
 #include <c4/format.hpp>
 #include <c4/type_name.hpp>
@@ -56,6 +69,8 @@ class YamlRootNodeWriter;
 struct YamlString
 {
 	std::string yaml;
+
+	YamlString() = default;
 	YamlString(std::string yamlString);
 };
 
@@ -66,13 +81,14 @@ public:
 	Exception(const std::string& msg);
 };
 
+
 class YamlNodeReader
 {
 protected:
 	ryml::ConstNodeRef _node;
 	const YamlRootNodeReader* _root;
 	bool _invalid;
-	std::unordered_map<ryml::csubstr, ryml::id_type>* _index;
+	std::unique_ptr<std::unordered_map<ryml::csubstr, ryml::id_type>> _index;
 
 	ryml::ConstNodeRef getChildNode(const ryml::csubstr& key) const;
 	/// Throws an error when failed to parse a node's value into the expected type
@@ -80,13 +96,15 @@ protected:
 
 public:
 	YamlNodeReader(); // vector demands a default constructor despite it never being used
+	YamlNodeReader(const YamlNodeReader& other);
+	YamlNodeReader(YamlNodeReader&& other) noexcept;
+	YamlNodeReader(const YamlRootNodeReader&) = delete; // no slicing allowed
+
 	YamlNodeReader(const YamlRootNodeReader* root, const ryml::ConstNodeRef& node);
 	YamlNodeReader(const YamlRootNodeReader* root, const ryml::ConstNodeRef& node, bool useIndex);
-	~YamlNodeReader();
 
 	/// Returns a copy of the current mapping container with O(1) access to the children. O(n) is spent building the index.
-	const YamlNodeReader useIndex() const;
-
+	YamlNodeReader useIndex() const;
 
 	/// Deserializes the value of the found child into the outputValue. If the node is invalid or the key doesn't exist, outputValue is set to defaultValue.
 	template <typename OutputType> // Name conflicts if renamed to "read"
@@ -159,9 +177,9 @@ public:
 	ryml::Location getLocationInFile() const;
 
 	/// Returns a child in the current mapping container or an invalid child
-	const YamlNodeReader operator[](ryml::csubstr key) const;
+	YamlNodeReader operator[](ryml::csubstr key) const;
 	/// Returns a child at a specific position or an invalid child
-	const YamlNodeReader operator[](size_t pos) const;
+	YamlNodeReader operator[](size_t pos) const;
 	/// Returns whether the current node is valid
 	explicit operator bool() const;
 
@@ -172,9 +190,9 @@ public:
 class YamlRootNodeReader : public YamlNodeReader
 {
 private:
-	ryml::Tree* _tree;
-	ryml::Parser* _parser;
-	ryml::EventHandlerTree* _eventHandler;
+	std::unique_ptr<ryml::EventHandlerTree> _eventHandler;
+	std::unique_ptr<ryml::Parser> _parser;
+	std::unique_ptr<ryml::Tree> _tree;
 	std::string _fileName;
 
 	ryml::Location getLocationInFile(const ryml::ConstNodeRef& node) const;
@@ -185,7 +203,7 @@ public:
 	YamlRootNodeReader(std::string fullFilePath, bool onlyInfoHeader = false);
 	YamlRootNodeReader(const RawData& data, std::string fileNameForError);
 	YamlRootNodeReader(const YamlString& yamlString, std::string description);
-	~YamlRootNodeReader();
+	YamlRootNodeReader(YamlRootNodeReader&&) = delete;
 
 	/// Returns base class to avoid slicing
 	YamlNodeReader sansRoot() const;
@@ -193,6 +211,7 @@ public:
 	friend YamlNodeReader;
 	friend YamlRootNodeWriter;
 };
+
 
 class YamlNodeWriter
 {
@@ -202,6 +221,7 @@ protected:
 
 public:
 	YamlNodeWriter(const YamlRootNodeWriter* root, ryml::NodeRef node);
+	YamlNodeWriter(YamlRootNodeWriter&&) = delete; // no slicing allowed
 
 	/// Converts writer to a reader
 	YamlNodeReader toReader();
@@ -253,17 +273,16 @@ public:
 class YamlRootNodeWriter : public YamlNodeWriter
 {
 private:
-	ryml::Tree* _tree;
-	ryml::Parser* _parser;
-	ryml::EventHandlerTree* _eventHandler;
+	std::unique_ptr<ryml::EventHandlerTree> _eventHandler;
+	std::unique_ptr<ryml::Parser> _parser;
+	std::unique_ptr<ryml::Tree> _tree;
 
 public:
 	YamlRootNodeWriter();
 	YamlRootNodeWriter(size_t bufferCapacity);
-	~YamlRootNodeWriter();
-
 	/// Returns base class to avoid slicing
 	YamlNodeWriter sansRoot();
+	YamlRootNodeWriter(YamlRootNodeWriter&&) = delete;
 
 	friend YamlNodeReader;
 	friend YamlNodeWriter;
@@ -282,7 +301,7 @@ void YamlNodeReader::readN(ryml::csubstr key, OutputType& outputValue, const Out
 template <typename OutputType>
 OutputType YamlNodeReader::readKey() const
 {
-	OutputType output;
+	OutputType output = {};
 	if (!tryReadKey(output))
 	{
 		if (_root)
@@ -295,7 +314,7 @@ OutputType YamlNodeReader::readKey() const
 template <typename OutputType>
 inline OutputType YamlNodeReader::readKey(const OutputType& defaultValue) const
 {
-	OutputType output;
+	OutputType output = {};
 	if (!tryReadKey(output))
 		output = defaultValue;
 	return output;
@@ -304,7 +323,7 @@ inline OutputType YamlNodeReader::readKey(const OutputType& defaultValue) const
 template <typename OutputType>
 OutputType YamlNodeReader::readVal() const
 {
-	OutputType output;
+	OutputType output = {};
 	if (!tryReadVal(output))
 	{
 		if (_root)
@@ -317,7 +336,7 @@ OutputType YamlNodeReader::readVal() const
 template <typename OutputType>
 OutputType YamlNodeReader::readVal(const OutputType& defaultValue) const
 {
-	OutputType output;
+	OutputType output = {};
 	if (!tryReadVal(output))
 		output = defaultValue;
 	return output;

@@ -62,9 +62,9 @@ RuleBaseFacility::~RuleBaseFacility()
  * @param mod Mod for the facility.
  * @param listOrder The list weight for this facility.
  */
-void RuleBaseFacility::load(const YAML::YamlNodeReader& r, Mod *mod)
+void RuleBaseFacility::load(const YAML::YamlNodeReader& node, Mod *mod)
 {
-	const auto& reader = r.useIndex();
+	const auto& reader = node.useIndex();
 	if (const auto& parent = reader["refNode"])
 	{
 		load(parent, mod);

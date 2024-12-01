@@ -69,9 +69,9 @@ RuleSoldier::~RuleSoldier()
  * @param node YAML node.
  * @param mod Mod for the unit.
  */
-void RuleSoldier::load(const YAML::YamlNodeReader& r, Mod *mod, const ModScript &parsers)
+void RuleSoldier::load(const YAML::YamlNodeReader& node, Mod *mod, const ModScript &parsers)
 {
-	const auto& reader = r.useIndex();
+	const auto& reader = node.useIndex();
 	if (const auto& parent = reader["refNode"])
 	{
 		load(parent, mod, parsers);

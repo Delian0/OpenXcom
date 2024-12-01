@@ -32,7 +32,7 @@ namespace OpenXcom
  * @param name The unique manufacture name.
  */
 RuleManufacture::RuleManufacture(const std::string& name, int listOrder)
-	: _name(name), _space(0), _time(0), _cost(0), _points(0), _refund(false), _producedCraft(0), _listOrder(listOrder), _spawnedSoldier("")
+	: _name(name), _space(0), _time(0), _cost(0), _points(0), _refund(false), _producedCraft(0), _listOrder(listOrder)
 {
 	_producedItemsNames[name] = 1;
 }
@@ -42,9 +42,9 @@ RuleManufacture::RuleManufacture(const std::string& name, int listOrder)
  * @param node YAML node.
  * @param listOrder The list weight for this manufacture.
  */
-void RuleManufacture::load(const YAML::YamlNodeReader& r, Mod* mod)
+void RuleManufacture::load(const YAML::YamlNodeReader& node, Mod* mod)
 {
-	const auto& reader = r.useIndex();
+	const auto& reader = node.useIndex();
 	if (const auto& parent = reader["refNode"])
 	{
 		load(parent, mod);
