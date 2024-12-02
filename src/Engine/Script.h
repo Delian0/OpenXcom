@@ -31,6 +31,7 @@
 #include "Exception.h"
 #include "GraphSubset.h"
 #include "Functions.h"
+#include <optional>
 
 
 namespace OpenXcom
@@ -391,11 +392,11 @@ struct TypeInfo
 class ScriptContainerBase
 {
 	friend struct ParserWriter;
-	std::vector<Uint8> _proc;
+	std::shared_ptr<std::vector<Uint8> > _proc;
 
 public:
 	/// Constructor.
-	ScriptContainerBase() = default;
+	ScriptContainerBase() : _proc(new std::vector<Uint8>()) {};
 	/// Copy constructor.
 	ScriptContainerBase(const ScriptContainerBase&) = delete;
 	/// Move constructor.
@@ -412,13 +413,23 @@ public:
 	/// Test if is any script there.
 	explicit operator bool() const
 	{
-		return !_proc.empty();
+		return !_proc->empty();
 	}
 
 	/// Get pointer to proc data.
 	const Uint8* data() const
 	{
-		return *this ? _proc.data() : nullptr;
+		return *this ? _proc->data() : nullptr;
+	}
+
+	std::shared_ptr<std::vector<Uint8>>& getData()
+	{
+		return _proc;
+	}
+
+	void setData(const std::shared_ptr<std::vector<Uint8>>& data)
+	{
+		_proc = data;
 	}
 };
 
@@ -1266,6 +1277,9 @@ protected:
 	/// Common typeless part of parsing string.
 	bool parseBase(ScriptContainerBase& scr, const std::string& parentName, const std::string& srcCode) const;
 
+	/// Parse string and return new script. Only parse script if it's not already cached, or is unsafe to cache.
+	bool parseBaseWithCache(ScriptContainerBase& container, const std::string& parentName, const std::string& srcCode) const;
+
 	/// Parse node and return new script.
 	void parseNode(ScriptContainerBase& container, const std::string& parentName, const YAML::YamlNodeReader& reader) const;
 
@@ -1692,6 +1706,7 @@ private:
 	std::vector<std::vector<ScriptContainerBase>> _events;
 	std::map<std::string, ScriptParserBase*> _parserNames;
 	std::vector<ScriptParserEventsBase*> _parserEvents;
+	std::unordered_map<std::string, std::pair<std::optional<bool>, std::shared_ptr<std::vector<Uint8> > > > _scriptsCache;
 	std::map<ArgEnum, TagData> _tagNames;
 	std::vector<TagValueType> _tagValueTypes;
 	std::vector<ScriptRefData> _refList;
@@ -1727,6 +1742,9 @@ public:
 
 	/// Get global ref data.
 	const ScriptRefData* getRef(ScriptRef name, ScriptRef postfix = {}) const;
+
+	/// Get scripts cache
+	std::unordered_map<std::string, std::pair<std::optional<bool>, std::shared_ptr<std::vector<Uint8> > > >& getScriptsCache() { return _scriptsCache; }
 
 	/// Get all tag names
 	const std::map<ArgEnum, TagData> &getTagNames() const { return _tagNames; }

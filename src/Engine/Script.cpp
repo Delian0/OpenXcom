@@ -37,6 +37,7 @@
 #include "Exception.h"
 #include "../fallthrough.h"
 #include "Collections.h"
+#include <optional>
 
 namespace OpenXcom
 {
@@ -2907,7 +2908,7 @@ void ParserWriter::relese()
 	);
 	auto charPtr = [&](ProgPos pos)
 	{
-		return (char*)&container._proc[static_cast<size_t>(pos)];
+		return (char*)&(*container._proc)[static_cast<size_t>(pos)];
 	};
 	//preallocate space in vector to have stable pointers to strings
 	auto currentText = push(textTotalSize);
@@ -2995,7 +2996,7 @@ ScriptRefData ParserWriter::getReferece(const ScriptRef& s) const
  */
 ProgPos ParserWriter::getCurrPos() const
 {
-	return static_cast<ProgPos>(container._proc.size());
+	return static_cast<ProgPos>(container._proc->size());
 }
 
 /**
@@ -3017,7 +3018,7 @@ size_t ParserWriter::getDiffPos(ProgPos begin, ProgPos end) const
 ProgPos ParserWriter::push(size_t s)
 {
 	auto curr = getCurrPos();
-	container._proc.insert(container._proc.end(), s, 0);
+	container._proc->insert(container._proc->end(), s, 0);
 	return static_cast<ProgPos>(curr);
 }
 
@@ -3029,7 +3030,7 @@ ProgPos ParserWriter::push(size_t s)
  */
 void ParserWriter::update(ProgPos pos, void* data, size_t s)
 {
-	memcpy(&container._proc[static_cast<size_t>(pos)], data, s);
+	memcpy(&(*container._proc)[static_cast<size_t>(pos)], data, s);
 }
 
 /**
@@ -3048,7 +3049,7 @@ void ParserWriter::pushValue(ScriptValueData v)
 ParserWriter::ReservedPos<ParserWriter::ProcOp> ParserWriter::pushProc(Uint8 procId)
 {
 	auto curr = getCurrPos();
-	container._proc.push_back(procId);
+	container._proc->push_back(procId);
 	return { curr };
 }
 
@@ -3059,7 +3060,7 @@ ParserWriter::ReservedPos<ParserWriter::ProcOp> ParserWriter::pushProc(Uint8 pro
  */
 void ParserWriter::updateProc(ReservedPos<ProcOp> pos, int procOffset)
 {
-	container._proc[static_cast<size_t>(pos.getPos())] += procOffset;
+	(*container._proc)[static_cast<size_t>(pos.getPos())] += procOffset;
 }
 
 /**
@@ -3825,6 +3826,42 @@ bool ScriptParserBase::parseBase(ScriptContainerBase& destScript, const std::str
 	}
 }
 
+bool ScriptParserBase::parseBaseWithCache(ScriptContainerBase& container, const std::string& parentName, const std::string& srcCode) const
+{
+	auto& scriptsCache = _shared->getScriptsCache();
+	const auto& cachedScriptInfo = scriptsCache.find(srcCode);
+	if (cachedScriptInfo != scriptsCache.end())
+	{
+		const auto& isScriptSafeToCache = cachedScriptInfo->second.first;
+		if (isScriptSafeToCache.has_value() && isScriptSafeToCache.value())
+		{	// script is cached and we already determined that it's safe to cache
+			const auto& cachedScript = cachedScriptInfo->second.second;
+			container.setData(cachedScript);
+			return true;
+		}
+	}
+	bool result = parseBase(container, parentName, srcCode);
+	if (cachedScriptInfo == scriptsCache.end())
+	{	// don't have the script cached yet
+		scriptsCache.emplace(srcCode, std::make_pair(std::optional<bool>(), container.getData()));
+	}
+	else
+	{	// already have the script cached
+		auto& isScriptSafeToCache = cachedScriptInfo->second.first;
+		if (!isScriptSafeToCache.has_value())
+		{	// have the script cached, but don't yet know if it's safe -> determine if it's safe
+			const auto& oldCompiledScript = cachedScriptInfo->second.second;
+			const auto& newCompiledScript = container.getData();
+			if (oldCompiledScript->size() != newCompiledScript->size())
+				isScriptSafeToCache = false;
+			isScriptSafeToCache = memcmp(oldCompiledScript->data(), newCompiledScript->data(), newCompiledScript->size() * sizeof(Uint8)) == 0;
+			if (isScriptSafeToCache)
+				container.setData(oldCompiledScript);
+		}
+	}
+	return result;
+}
+
 /**
  * Parse node and return new script.
  */
@@ -3834,7 +3871,7 @@ void ScriptParserBase::parseNode(ScriptContainerBase& container, const std::stri
 	{
 		if (const YAML::YamlNodeReader& curr = scripts[ryml::to_csubstr(getName())])
 		{
-			if (false == parseBase(container, parentName, curr.readVal<std::string>()))
+			if (false == parseBaseWithCache(container, parentName, curr.readVal<std::string>()))
 			{
 				Log(LOG_ERROR) << "    for node with code at line " << reader.getLocationInFile().line << " in " << getGlobal()->getCurrentFile();
 				Log(LOG_ERROR) << ""; // dummy line to separate similar errors
@@ -3843,7 +3880,7 @@ void ScriptParserBase::parseNode(ScriptContainerBase& container, const std::stri
 	}
 	if (!container && !getDefault().empty())
 	{
-		if (false == parseBase(container, parentName, getDefault()))
+		if (false == parseBaseWithCache(container, parentName, getDefault()))
 		{
 			Log(LOG_ERROR) << ""; // dummy line to separate similar errors
 		}
@@ -3857,7 +3894,7 @@ void ScriptParserBase::parseCode(ScriptContainerBase& container, const std::stri
 {
 	if (!srcCode.empty())
 	{
-		if (false == parseBase(container, parentName, srcCode))
+		if (false == parseBaseWithCache(container, parentName, srcCode))
 		{
 			Log(LOG_ERROR) << "    for code in " << getGlobal()->getCurrentFile();
 			Log(LOG_ERROR) << ""; // dummy line to separate similar errors
@@ -3865,7 +3902,7 @@ void ScriptParserBase::parseCode(ScriptContainerBase& container, const std::stri
 	}
 	if (!container && !getDefault().empty())
 	{
-		if (false == parseBase(container, parentName, getDefault()))
+		if (false == parseBaseWithCache(container, parentName, getDefault()))
 		{
 			Log(LOG_ERROR) << ""; // dummy line to separate similar errors
 		}
@@ -4563,6 +4600,7 @@ void ScriptGlobal::endLoad()
 	}
 	_parserNames.clear();
 	_parserEvents.clear();
+	_scriptsCache.clear();
 }
 
 /**
