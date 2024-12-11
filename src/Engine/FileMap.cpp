@@ -331,14 +331,14 @@ static std::string hexDumpBogusData(const std::string& bogus) {
 /* recursively list a directory */
 typedef std::vector<std::pair<std::string, std::string>> dirlist_t; // <dirname, basename>
 static bool ls_r(const std::string &basePath, const std::string &relPath, dirlist_t& dlist) {
-	auto fullDir = concatOptionalPaths(basePath, relPath);
-	auto files = CrossPlatform::getFolderContents(fullDir);
+	const auto& fullDir = concatOptionalPaths(basePath, relPath);
+	const auto& files = CrossPlatform::getFolderContents(fullDir);
 	//Log(LOG_VERBOSE) << "ls_r: listing "<<fullDir<<" count="<<files.size();
 	for (auto i = files.begin(); i != files.end(); ++i) {
 		if (std::get<1>(*i)) { // it's a subfolder
-			auto fullpath = concatPaths(fullDir, std::get<0>(*i));
+			const auto& fullpath = concatPaths(fullDir, std::get<0>(*i));
 			if (CrossPlatform::folderExists(fullpath)) {
-				auto nextRelPath = concatOptionalPaths(relPath, std::get<0>(*i));
+				const auto& nextRelPath = concatOptionalPaths(relPath, std::get<0>(*i));
 				ls_r(basePath, nextRelPath, dlist);
 				continue;
 			}
@@ -373,42 +373,42 @@ struct VFSLayer {
 										mapped(false) { }
 	~VFSLayer() { }
 	const FileRecord *at(const std::string& relpath) {
-		auto crelpath = canonicalize(relpath);
-		auto it = resources.find(crelpath);
+		const auto& crelpath = canonicalize(relpath);
+		const auto& it = resources.find(crelpath);
 		return  (it == resources.end()) ? NULL : &it->second;
 	}
 	const NameSet& ls(const std::string& relpath) {
-		auto crelpath = canonicalize(relpath);
+		std::string crelpath = canonicalize(relpath);
 		while (crelpath.size() > 0 && crelpath[crelpath.size() - 1] == '/') {
 			crelpath.resize(crelpath.size() - 1);
 		}
-		auto it = vdirs.find(crelpath);
+		const auto& it = vdirs.find(crelpath);
 		return (it == vdirs.end()) ? emptySet : it->second;
 	}
 	const std::vector<FileRecord>& get_rulesets() { return rulesets; }
 
 	void insert(const std::string& relpath, FileRecord frec) {
-		auto crelpath = canonicalize(relpath);
+		const auto& crelpath = canonicalize(relpath);
 
 		if (isRuleset(crelpath)) {
 			rulesets.push_back(frec);
 			return;
 		}
 		// shouldn't happen, but overwrite nevertheless
-		auto existing = resources.find(crelpath);
+		const auto& existing = resources.find(crelpath);
 		if (existing != resources.end()) { resources.erase(existing); }
 		// actually insert
 		resources.insert(std::make_pair(crelpath, frec));
 
 		// update corresponding vdir
 		std::string basename = crelpath;
-		std::string dirname = "";
-		auto const pos = crelpath.find_last_of('/');
+		std::string dirname = {};
+		size_t pos = crelpath.find_last_of('/');
 		if (pos != crelpath.npos) {
 			basename = crelpath.substr(pos + 1);
 			dirname = crelpath.substr(0, pos);
 		}
-		auto existing_vd = vdirs.find(dirname);
+		const auto& existing_vd = vdirs.find(dirname);
 		if (existing_vd == vdirs.end()) {
 			vdirs.insert(std::pair<std::string, NameSet>(dirname, NameSet()));
 		}
@@ -512,10 +512,9 @@ struct VFSLayer {
 		fullpath = dirpath;
 		FileRecord frec;
 		frec.zip = NULL;
-		std::string relpath;
 		int mapped_count = 0;
 		for (auto i = dlist.cbegin(); i != dlist.cend(); ++i) {
-			relpath = concatOptionalPaths(i->first, i->second);
+			const auto& relpath = concatOptionalPaths(i->first, i->second);
 			frec.fullpath = concatPaths(fullpath, relpath);
 			if (isRuleset(i->second) && ignore_ruls) { continue; }
 			insert(relpath, frec);
@@ -548,9 +547,8 @@ struct VFSLayerStack {
 		vdirs.clear();
 	}
 	void _merge_vdirs(VFSLayer *src) {
-		auto src_vdirs = src->vdirs;
-		for (auto i = src_vdirs.begin(); i != src_vdirs.end(); ++i) {
-			auto vdi = vdirs.find(i->first);
+		for (auto i = src->vdirs.begin(); i != src->vdirs.end(); ++i) {
+			const auto& vdi = vdirs.find(i->first);
 			if (vdi == vdirs.end()) {
 				vdirs.insert(*i);
 			} else {
@@ -562,16 +560,16 @@ struct VFSLayerStack {
 	}
 	void _merge_resources(VFSLayer *src, bool reverse) {
 		for (auto ri = src->resources.begin(); ri != src->resources.end(); ++ri) {
-			auto crelpath = ri->first;
-			auto frec = ri->second;
-			auto existing = resources.find(crelpath);
+			const auto& crelpath = ri->first;
+			const auto& frec = ri->second;
+			const auto& existing = resources.find(crelpath);
 			if ((!reverse) && (existing != resources.end())) { resources.erase(existing); }
 			resources.insert(std::make_pair(crelpath, frec));
 		}
 	}
 	void push_back(VFSLayer *layer) {
 		layers.push_back(layer);
-		auto ruls = layer->rulesets;
+		const auto& ruls = layer->rulesets;
 		for (auto i = ruls.begin(); i != ruls.end(); ++i) {
 			rulesets.push_back(*i);
 		}
@@ -580,7 +578,7 @@ struct VFSLayerStack {
 	}
 	void push_front(VFSLayer *layer) {
 		layers.insert(layers.begin(), layer);
-		auto ruls = layer->rulesets;
+		const auto& ruls = layer->rulesets;
 		for (auto i = ruls.rbegin(); i != ruls.rend(); ++i) {
 			rulesets.insert(rulesets.begin(), *i);
 		}
@@ -588,21 +586,21 @@ struct VFSLayerStack {
 		_merge_resources(layer, true);
 	}
 	const FileRecord *at(const std::string& relpath) {
-		auto crelpath = canonicalize(relpath);
-		auto it = resources.find(crelpath);
+		const auto& crelpath = canonicalize(relpath);
+		const auto& it = resources.find(crelpath);
 		return (it == resources.end()) ? NULL : &it->second;
 	}
 	const NameSet& ls(const std::string& relpath) {
-		auto crelpath = canonicalize(relpath);
+		std::string crelpath = canonicalize(relpath);
 		while (crelpath.size() > 0 && crelpath[crelpath.size() - 1] == '/') {
 			crelpath.resize(crelpath.size() - 1);
 		}
-		auto it = vdirs.find(crelpath);
+		const auto& it = vdirs.find(crelpath);
 		return (it == vdirs.end()) ? emptySet : it->second;
 	}
 	const std::vector<const FileRecord *> get_slice(const std::string& relpath) {
 		std::vector<const FileRecord *> rv;
-		auto crelpath = canonicalize(relpath);
+		const auto& crelpath = canonicalize(relpath);
 		for (auto si = layers.begin(); si != layers.end(); ++si) {
 			rv.push_back((*si)->at(crelpath));
 		}
@@ -653,12 +651,12 @@ struct VFS {
 	}
 	void push_back(ModRecord *mod) {
 		mods.push_back(mod);
-		auto layers = mod->stack.layers;
+		const auto& layers = mod->stack.layers;
 		for (auto i = layers.begin(); i != layers.end(); ++i) {
 			stack.push_back(*i);
 		}
-		auto rulesets = mod->getRulesets();
-		auto modId = mod->modInfo.getId();
+		const auto& rulesets = mod->getRulesets();
+		const auto& modId = mod->modInfo.getId();
 		// 	typedef std::vector<std::pair<std::string, std::vector<FileRecord *>>> RSOrder;
 		rsorder.push_back(std::make_pair(modId, rulesets));
 	}
@@ -768,11 +766,10 @@ void setup(const std::vector<const ModInfo* >& active, bool embeddedOnly)
 	std::vector<std::string> map_order;
 	for (auto i = active.begin(); i != active.end(); ++i) {
 		std::string currentId = (*i)-> getId();
-		std::string masterId;
 		auto insert_before = map_order.end();
 		while (true) {
 			insert_before = map_order.insert(insert_before, currentId);
-			masterId = ModsAvailable.find(currentId)->second->modInfo.getMaster();
+			const auto& masterId = ModsAvailable.find(currentId)->second->modInfo.getMaster();
 			if (masterId.empty()) { break; }
 			currentId = masterId;
 		}
