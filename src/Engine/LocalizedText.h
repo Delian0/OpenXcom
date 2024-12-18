@@ -45,6 +45,8 @@ class LocalizedText
 public:
 	/// Create from existing string.
 	LocalizedText(const std::string &);
+	/// Create from an existing string_view.
+	LocalizedText(const std::string_view&);
 	/// Create the empty string.
 	LocalizedText() : _nextArg(1) { /* Empty by design. */ }
 	/// Return constant string.
@@ -69,6 +71,15 @@ private:
  */
 inline LocalizedText::LocalizedText(const std::string &text)
   : _text(text), _nextArg(0)
+{
+	// Empty by design.
+}
+
+/**
+ * Create a LocalizedText from a localized std::string.
+ */
+inline LocalizedText::LocalizedText(const std::string_view& text)
+	: _text(text), _nextArg(0)
 {
 	// Empty by design.
 }
