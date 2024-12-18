@@ -50,7 +50,7 @@ private:
 	std::list<State*> _states, _deleted;
 	SavedGame *_save;
 	Mod *_mod;
-	bool _quit, _init, _update;
+	bool _quit, _init, _initAudio, _update;
 	FpsCounter *_fpsCounter;
 	bool _mouseActive;
 	unsigned int _timeOfLastFrame;
