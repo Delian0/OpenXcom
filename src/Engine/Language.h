@@ -49,8 +49,8 @@ private:
 	static std::map<std::string, std::string> _names;
 	static std::vector<std::string> _rtl, _cjk;
 
-	/// Parses a text string loaded from an external file.
-	std::string loadString(const std::string &s) const;
+	/// Formats a string of localized text
+	void loadString(std::string& s);
 public:
 	/// Creates a blank language.
 	Language();

@@ -188,17 +188,18 @@ void Language::loadFile(const FileMap::FileRecord *frec)
 {
 	const YAML::YamlRootNodeReader& reader = frec->getYAML();
 	YAML::YamlNodeReader langMap = reader[0].isMap() ? reader[0] : reader.toBase();
-
+	std::string buffer;
 	for (const auto& langReader : langMap.children())
 	{
 		// Regular strings
 		if (langReader.hasVal())
 		{
-			std::string value = langReader.readVal<std::string>();
+			std::string_view value = langReader.val();
 			if (!value.empty())
 			{
-				std::string key = langReader.readKey<std::string>();
-				_strings[key] = loadString(value);
+				buffer.assign(langReader.key());
+				const auto& [pair, result] = _strings.insert_or_assign(buffer, value);
+				loadString(pair->second.str());
 			}
 		}
 		// Strings with plurality
@@ -206,11 +207,12 @@ void Language::loadFile(const FileMap::FileRecord *frec)
 		{
 			for (const auto& pluralityReader : langReader.children())
 			{
-				std::string value = pluralityReader.readVal<std::string>("");
+				std::string_view value = pluralityReader.val();
 				if (!value.empty())
 				{
 					std::string key = langReader.readKey<std::string>() + "_" + pluralityReader.readKey<std::string>();
-					_strings[key] = loadString(value);
+					const auto& result = _strings.insert_or_assign(key, value);
+					loadString(result.first->second.str());
 				}
 			}
 		}
@@ -229,23 +231,22 @@ void Language::loadRule(const std::map<std::string, ExtraStrings*> &extraStrings
 	{
 		for (const auto& pair : *it->second->getStrings())
 		{
-			_strings[pair.first] = loadString(pair.second);
+			const auto& result = _strings.insert_or_assign(pair.first, pair.second);
+			loadString(result.first->second.str());
 		}
 	}
 }
 
 /**
- * Replaces all special string markers with the appropriate characters.
+ * In-place replaces all special string markers with the appropriate characters.
  * @param string Original string.
  * @return New converted string.
  */
-std::string Language::loadString(const std::string &string) const
+void Language::loadString(std::string& s)
 {
-	std::string s = string;
 	Unicode::replace(s, "{NEWLINE}", "\n");
 	Unicode::replace(s, "{SMALLLINE}", "\x02"); // Unicode::TOK_NL_SMALL
-	Unicode::replace(s, "{ALT}", "\x01"); // Unicode::TOK_COLOR_FLIP
-	return s;
+	Unicode::replace(s, "{ALT}", "\x01");       // Unicode::TOK_COLOR_FLIP
 }
 
 /**
