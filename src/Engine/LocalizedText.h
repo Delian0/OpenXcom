@@ -51,6 +51,8 @@ public:
 	LocalizedText() : _nextArg(1) { /* Empty by design. */ }
 	/// Return constant string.
 	operator std::string const&() const OX_REQUIRED_RESULT;
+	/// Get a reference to underlying string data.
+	std::string& str() { return _text; }
 	/// Get a pointer to underlying char data.
 	const char *c_str() const OX_REQUIRED_RESULT { return _text.c_str(); }
 
