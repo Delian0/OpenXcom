@@ -84,7 +84,7 @@ namespace Unicode
 	/// Lowercases a string in place.
 	void lowerCase(std::string &s);
 	/// Replaces a substring.
-	void replace(std::string &str, const std::string &find, const std::string &replace);
+	void replace(std::string &str, const std::string_view &find, const std::string_view &replace);
 	/// Formats an integer value as number with separators.
 	std::string formatNumber(int64_t value, const std::string &currency = "");
 	/// Formats an integer value as currency.

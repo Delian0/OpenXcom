@@ -711,7 +711,7 @@ void lowerCase(std::string &s)
  * @param find The substring to find.
  * @param replace The substring to replace it with.
  */
-void replace(std::string &str, const std::string &find, const std::string &replace)
+void replace(std::string &str, const std::string_view &find, const std::string_view &replace)
 {
 	for (size_t i = str.find(find); i != std::string::npos; i = str.find(find, i + replace.length()))
 	{
