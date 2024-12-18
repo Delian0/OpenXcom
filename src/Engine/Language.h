@@ -41,7 +41,7 @@ enum SoldierGender : char;
 class Language
 {
 private:
-	std::map<std::string, LocalizedText> _strings;
+	std::unordered_map<std::string, LocalizedText> _strings;
 	LanguagePlurality *_handler;
 	TextDirection _direction;
 	TextWrapping _wrap;
