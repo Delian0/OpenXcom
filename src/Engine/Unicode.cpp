@@ -687,22 +687,37 @@ void upperCase(std::string &s)
 
 /**
  * Lowercases a UTF-8 string, modified in place.
- * Used for case-insensitive comparisons.
+ * Used for case-insensitive and locale-insensitive UTF-8 comparisons.
  * @param s Source string.
  */
 void lowerCase(std::string &s)
 {
 	if (s.empty())
 		return;
+	// Treat the string as an ASCII string until we find any non-ascii codes
+	bool isAsciiString = true;
+	for (char *currCharPtr = s.data(), *end = s.data() + s.size(); currCharPtr != end; ++currCharPtr)
+	{
+		if (static_cast<Sint8>(*currCharPtr) < 0) // most significant bit is 1
+		{
+			isAsciiString = false;
+			break;
+		}
+		if (*currCharPtr >= 'A' && *currCharPtr <= 'Z')
+			*currCharPtr |= 0x20; // this works because it's a locale-insensitive conversion
+	}
+	if (!isAsciiString) // Fallback for when we need to convert UTF-8 characters. Which never happens?
+	{
 #ifdef _WIN32
-	std::wstring ws = convMbToWc(s, CP_UTF8);
-	CharLowerW(&ws[0]);
-	s = convWcToMb(ws, CP_UTF8);
+		std::wstring ws = convMbToWc(s, CP_UTF8);
+		CharLowerW(&ws[0]);
+		s = convWcToMb(ws, CP_UTF8);
 #else
-	std::wstring ws = convMbToWc(s, 0);
-	std::use_facet< std::ctype<wchar_t> >(utf8).tolower(&ws[0], &ws[0] + ws.size());
-	s = convWcToMb(ws, 0);
+		std::wstring ws = convMbToWc(s, 0);
+		std::use_facet< std::ctype<wchar_t> >(utf8).tolower(&ws[0], &ws[0] + ws.size());
+		s = convWcToMb(ws, 0);
 #endif
+	}
 }
 
 /**
