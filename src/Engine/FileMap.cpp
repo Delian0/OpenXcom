@@ -1262,9 +1262,9 @@ const FileRecord* getModRuleFile(const ModInfo* modInfo, const std::string& relp
 	return nullptr;
 }
 
-std::string canonicalize(const std::string &in)
+std::string canonicalize(const std::string_view &in)
 {
-	std::string ret = in;
+	std::string ret(in);
 	Unicode::lowerCase(ret);
 	return ret;
 }

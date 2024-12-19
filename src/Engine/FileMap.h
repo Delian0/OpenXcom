@@ -108,7 +108,7 @@ namespace FileMap
 	void setup(const std::vector<const ModInfo *>& active, bool embeddedOnly);
 
 	/// lowercase it
-	std::string canonicalize(const std::string& fname);
+	std::string canonicalize(const std::string_view& fname);
 
 	/// scans a moddir for mods, (privately) maps them.
 	void scanModDir(const std::string& dirname, const std::string& basename, bool protectedLocation);
