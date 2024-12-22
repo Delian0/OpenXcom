@@ -491,7 +491,7 @@ struct VFSLayer {
 			frec.findex = fi;
 			frec.fullpath = concatPaths(fullpath, fname);
 
-			if (isRuleset(relfname) && ignore_ruls) { continue; }
+			if (ignore_ruls && isRuleset(relfname)) { continue; }
 			insert(relfname, frec);
 			mapped_count ++;
 		}
@@ -516,7 +516,7 @@ struct VFSLayer {
 		for (auto i = dlist.cbegin(); i != dlist.cend(); ++i) {
 			const auto& relpath = concatOptionalPaths(i->first, i->second);
 			frec.fullpath = concatPaths(fullpath, relpath);
-			if (isRuleset(i->second) && ignore_ruls) { continue; }
+			if (ignore_ruls && isRuleset(i->second)) { continue; }
 			insert(relpath, frec);
 			mapped_count ++;
 		}
