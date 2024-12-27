@@ -368,10 +368,9 @@ void RuleStatBonus::load(const std::string& parentName, const YAML::YamlNodeRead
 	if (_refresh)
 	{
 		auto script = std::string{ };
-		script.reserve(1024);
-
 		if (!_bonusOrig.empty())
 		{
+			script.reserve(1024);
 			//scale up for rounding
 			script += "mul bonus 1000;\n";
 
@@ -386,7 +385,10 @@ void RuleStatBonus::load(const std::string& parentName, const YAML::YamlNodeRead
 					if (j < p.second.size())
 					{
 						script += " ";
-						script += std::to_string((int)(p.second[j] * statMultiper * 1000));
+						Sint32 stat = (Sint32)(p.second[j] * statMultiper * 1000);
+						size_t charLen = (size_t)(c4::digits_dec(stat < 0 ? stat * -1 : stat) + (stat < 0));
+						script.resize(script.size() + charLen);
+						c4::to_chars({script.data() + script.size() - charLen, charLen}, stat); // write directly into script
 					}
 					else
 					{
