@@ -354,7 +354,7 @@ private:
 	T* loadRule(const YAML::YamlNodeReader& reader, std::map<std::string, T*>* map, std::vector<std::string>* index = 0, const std::string& key = "type", F&& factory = {});
 	/// Gets a ruleset element.
 	template <typename T>
-	T *getRule(const std::string &id, const std::string &name, const std::map<std::string, T*> &map, bool error) const;
+	T *getRule(const std::string &id, const std::string_view& name, const std::map<std::string, T*> &map, bool error) const;
 	/// Gets a random music. This is private to prevent access, use playMusic(name, true) instead.
 	Music *getRandomMusic(const std::string &name) const;
 	/// Gets a particular sound set. This is private to prevent access, use getSound(name, id) instead.

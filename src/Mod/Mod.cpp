@@ -819,7 +819,7 @@ Mod::~Mod()
  * @return Pointer to the rule element, or NULL if not found.
  */
 template <typename T>
-T *Mod::getRule(const std::string &id, const std::string &name, const std::map<std::string, T*> &map, bool error) const
+T *Mod::getRule(const std::string &id, const std::string_view &name, const std::map<std::string, T*> &map, bool error) const
 {
 	if (isEmptyRuleName(id))
 	{
@@ -834,7 +834,7 @@ T *Mod::getRule(const std::string &id, const std::string &name, const std::map<s
 	{
 		if (error)
 		{
-			throw Exception(name + " " + id + " not found");
+			throw Exception((std::string)name + " " + id + " not found");
 		}
 		return 0;
 	}
