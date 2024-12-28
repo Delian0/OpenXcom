@@ -1296,7 +1296,7 @@ void throwOnBadMapHelper(const std::string &parent, const YAML::YamlNodeReader& 
 }
 
 template<typename... T>
-void showInfo(const std::string &parent, const YAML::YamlNodeReader& reader, T... names)
+void showInfo(const std::string &parent, const YAML::YamlNodeReader& reader, const T&... names)
 {
 	if (reader.hasValTag(InfoTag))
 	{
