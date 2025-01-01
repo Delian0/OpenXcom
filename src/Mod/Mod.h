@@ -65,6 +65,7 @@ class RuleTerrain;
 class MapDataSet;
 class RuleSkill;
 class RuleSoldier;
+class SoldierNamePool;
 class Unit;
 class Armor;
 class ArticleDefinition;
@@ -179,6 +180,7 @@ private:
 	std::map<std::string, MapDataSet*> _mapDataSets;
 	std::map<std::string, RuleSkill*> _skills;
 	std::map<std::string, RuleSoldier*> _soldiers;
+	std::map<std::string, SoldierNamePool*> _namePools;
 	std::map<std::string, Unit*> _units;
 	std::map<std::string, AlienRace*> _alienRaces;
 	std::map<std::string, RuleEnviroEffects*> _enviroEffects;
@@ -586,6 +588,9 @@ public:
 
 	/// Loads data for kill criteria from Commendations.
 	void loadKillCriteria(const std::string& parent, std::vector<std::vector<std::pair<int, std::vector<std::string> > > >& names, const YAML::YamlNodeReader& reader) const;
+
+	/// Loads a soldier name pool
+	SoldierNamePool* getNamePool(const std::string& relpath);
 
 
 	/// Convert names to correct rule objects

@@ -98,7 +98,6 @@ private:
 	std::vector<const RuleSkill*> _skills;
 	ScriptValues<RuleSoldier> _scriptValues;
 
-	void addSoldierNamePool(const std::string &namFile);
 public:
 	/// Creates a blank soldier ruleset.
 	RuleSoldier(const std::string &type, int listOrder);

@@ -54,10 +54,6 @@ RuleSoldier::RuleSoldier(const std::string &type, int listOrder) : _type(type), 
  */
 RuleSoldier::~RuleSoldier()
 {
-	for (auto* namepool : _names)
-	{
-		delete namepool;
-	}
 	for (auto* statString : _statStrings)
 	{
 		delete statString;
@@ -141,10 +137,6 @@ void RuleSoldier::load(const YAML::YamlNodeReader& node, Mod *mod, const ModScri
 		std::string fileName = fileNameOrCommand.readVal<std::string>();
 		if (fileName == "delete")
 		{
-			for (auto* namepool : _names)
-			{
-				delete namepool;
-			}
 			_names.clear();
 		}
 		else
@@ -156,14 +148,14 @@ void RuleSoldier::load(const YAML::YamlNodeReader& node, Mod *mod, const ModScri
 				for (const auto& f: FileMap::filterFiles(FileMap::getVFolderContents(fileName), "nam")) { names.push_back(f); }
 				std::sort(names.begin(), names.end(), Unicode::naturalCompare);
 				for (const auto& name : names)
-				{
-					addSoldierNamePool(fileName + name);
-				}
+					if (SoldierNamePool* pool = mod->getNamePool(fileName + name))
+						_names.push_back(pool);
 			}
 			else
 			{
 				// load given file
-				addSoldierNamePool(fileName);
+				if (SoldierNamePool* pool = mod->getNamePool(fileName))
+					_names.push_back(pool);
 			}
 		}
 	}
@@ -237,13 +229,6 @@ void RuleSoldier::afterLoad(const Mod* mod)
 
 	_manaMissingWoundThreshold = mod->getManaWoundThreshold();
 	_healthMissingWoundThreshold = mod->getHealthWoundThreshold();
-}
-
-void RuleSoldier::addSoldierNamePool(const std::string &namFile)
-{
-	SoldierNamePool *pool = new SoldierNamePool();
-	pool->load(namFile);
-	_names.push_back(pool);
 }
 
 /**

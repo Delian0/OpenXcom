@@ -66,6 +66,7 @@
 #include "RuleTerrain.h"
 #include "MapScript.h"
 #include "RuleSoldier.h"
+#include "SoldierNamePool.h"
 #include "RuleSkill.h"
 #include "RuleCommendations.h"
 #include "AlienRace.h"
@@ -671,6 +672,10 @@ Mod::~Mod()
 		delete pair.second;
 	}
 	for (auto& pair : _soldiers)
+	{
+		delete pair.second;
+	}
+	for (auto& pair : _namePools)
 	{
 		delete pair.second;
 	}
@@ -2030,6 +2035,23 @@ void Mod::loadKillCriteria(const std::string &parent, std::vector<std::vector<st
 	}
 }
 
+/**
+ * Returns the name pool with the specified relative path.
+ * Creates and loads one if it doesn't already exist.
+ * @param name SoldierNamePool file path.
+ * @return SoldierNamePool with the file path or nullptr
+ */
+SoldierNamePool* Mod::getNamePool(const std::string& relpath)
+{
+	std::string crelpath = FileMap::canonicalize(relpath);
+	const auto& result = _namePools.find(crelpath);
+	if (result != _namePools.end())
+		return result->second;
+	SoldierNamePool* pool = new SoldierNamePool();
+	pool->load(crelpath);
+	_namePools.emplace(crelpath, pool);
+	return pool;
+}
 
 
 
