@@ -443,7 +443,17 @@ void UnitWalkBState::think()
 void UnitWalkBState::cancel()
 {
 	if (_parent->getSave()->getSide() == FACTION_PLAYER && _parent->getPanicHandled())
-	_pf->abortPath();
+	{
+		int startDir = _pf->getStartDirection();
+		_pf->abortPath();
+		if (_beforeFirstStep)
+		{
+			// cancel here would allow turning without spending any TUs; Cancel after the 1st tile is walked
+			Position pos = _unit->getPosition();
+			_pf->directionToVector(startDir, &pos);
+			_pf->calculate(this->_unit, _unit->getPosition() + pos, _action.getMoveType());
+		}
+	}
 }
 
 /**
